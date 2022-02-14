@@ -1,6 +1,5 @@
 //CODIGO ESCLACO CONTROL PUERTA Y CAMARA
 //EN RADIOS nRF24L01    
-//prueba de q esa vaina sea sube                                                     
 
 #include "mbed.h"
 #include "nRF24L01P.h"
