@@ -192,6 +192,8 @@ def OBTENER_DATO(device, variable):
     TEMP_TOMACORRIENTE = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
 #'''
 
+name = 'main'
+
 if name == 'main':
 
     # RECUPERAR_DATOS()
