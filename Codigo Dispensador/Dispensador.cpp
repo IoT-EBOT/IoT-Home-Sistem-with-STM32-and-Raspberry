@@ -1,5 +1,4 @@
-//CODIGO ESCLAVO CONTROL DE LUZ Y DIMMER
-//EN RADIOS nRF24L01                                                         
+//CODIGO ESCLAVO CONTROL DISPENSADOR                                                        
 
 #include "mbed.h"
 #include "nRF24L01P.h"
@@ -54,10 +53,10 @@ char C_A = 0;
 
 int main ()
 {
-    RADIO.powerUp();                                                                             //Radio ENCENDIDO y en modo STANDBY
-    CONF_GENER (RF_DISPENSADOR, POTENCIA_T, VEL_T, DIR_DISPENSADOR, TAMANO_DIR, NRF24L01P_PIPE_P0);                     //CONFIGURACION INICIAL radio
+    RADIO.powerUp();    //Radio ENCENDIDO y en modo STANDBY
+    CONF_GENER (RF_DISPENSADOR, POTENCIA_T, VEL_T, DIR_DISPENSADOR, TAMANO_DIR, NRF24L01P_PIPE_P0); //CONFIGURACION INICIAL radio
     CONF_RADIO (DIR_MAESTRO, TAMANO); 
-    PC.printf("********************CONF_INICIAL********************\r\n");                              //DIRECCION INICIAL de Transmision
+    PC.printf("********************CONF_INICIAL********************\r\n");  //DIRECCION INICIAL de Transmision
     PC.printf( "nRF24L01+ Frequency    : %d MHz\r\n",  RADIO.getRfFrequency() );
     PC.printf( "nRF24L01+ Output power : %d dBm\r\n",  RADIO.getRfOutputPower() );
     PC.printf( "nRF24L01+ Data Rate    : %d kbps\r\n", RADIO.getAirDataRate() );
