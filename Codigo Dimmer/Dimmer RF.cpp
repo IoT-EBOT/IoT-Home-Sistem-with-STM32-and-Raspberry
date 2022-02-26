@@ -68,13 +68,13 @@ int main ()
     RADIO.powerUp();                                                                             //Radio ENCENDIDO y en modo STANDBY
     CONF_GENER (RF_DIMMER, POTENCIA_T, VEL_T, DIR_DIMMER, TAMANO_DIR, NRF24L01P_PIPE_P0);                     //CONFIGURACION INICIAL radio
     CONF_RADIO (DIR_MAESTRO, TAMANO); 
-    /*PC.printf("********************CONF_INICIAL********************\r\n");                              //DIRECCION INICIAL de Transmision
+    PC.printf("********************CONF_INICIAL********************\r\n");                              //DIRECCION INICIAL de Transmision
     PC.printf( "nRF24L01+ Frequency    : %d MHz\r\n",  RADIO.getRfFrequency() );
     PC.printf( "nRF24L01+ Output power : %d dBm\r\n",  RADIO.getRfOutputPower() );
     PC.printf( "nRF24L01+ Data Rate    : %d kbps\r\n", RADIO.getAirDataRate() );
     PC.printf( "nRF24L01+ TX Address   : 0x%010llX\r\n", RADIO.getTxAddress() );
     PC.printf( "nRF24L01+ RX Address   : 0x%010llX\r\n", RADIO.getRxAddress() );
-    PC.printf("****************************************************\r\n");*/
+    PC.printf("****************************************************\r\n");
     RADIO.setReceiveMode(); //Modo de RECEPCION ACTIVADO
     RADIO.enable();
     
