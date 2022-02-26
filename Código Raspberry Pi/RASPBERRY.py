@@ -215,6 +215,7 @@ if name == 'main':
     while (True):
 
         # RECUPERAR DATOS DESDE UBIDOTS
+
         DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
         INTERRUP = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
         DISP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
@@ -223,6 +224,7 @@ if name == 'main':
         TOMA = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
 
         # COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALAMCENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION
+
         if INTERRUP != TEMP_INTERRUPTOR:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
             print("El interruptor cambio")
             TEMP_INTERRUPTOR = INTERRUP
@@ -295,6 +297,8 @@ if name == 'main':
                                             print("DIMMER RECIBIO Y SETEO SU CICLO UTIL")
                                             RESPUESTA = 1
                                             ESPERAR = 0
+
+
         if DISP_COMIDA != TEMP_COMIDA:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
             print("La comida cambio")
             TEMP_COMIDA = DISP_COMIDA
@@ -310,6 +314,8 @@ if name == 'main':
                             ENVIAR_DATO(COMIDA, 0.0)
                             DISP_COMIDA = TEMP_COMIDA = 0.0;
                             ESPERAR = 0
+
+
         if DISP_AGUA != TEMP_AGUA:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
             print("El agua cambio")
             TEMP_AGUA = DISP_AGUA
@@ -325,12 +331,17 @@ if name == 'main':
                             ENVIAR_DATO(AGUA, 0.0)
                             DISP_AGUA = TEMP_AGUA = 0.0;
                             ESPERAR = 0
+
+
         if CURRENT != TEMP_CORRIENTE:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
             print("La corriente cambio cambio")
             TEMP_CORRIENTE = CURRENT
+
+
         if TOMA != TEMP_TOMACORRIENTE:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
             print("La toma cambio cambio")
             TEMP_TOMACORRIENTE = TOMA
+
             if TOMA == 1:
                 temp = 'F'
                 SERIAL.write(temp.encode())
@@ -342,6 +353,7 @@ if name == 'main':
                             print(LEER)
                             if LEER == bytes('F'.encode()):  # EL MICRO YA ENVIO Y EL DISPENSADOR RECIBIO LA ORDEN
                                 ESPERAR_2 = 0
+
             elif TOMA == 0:
                 temp = 'G'
                 SERIAL.write(temp.encode())
@@ -353,8 +365,11 @@ if name == 'main':
                             print(LEER)
                             if LEER == bytes('N'.encode()):  # EL MICRO YA ENVIO Y EL DISPENSADOR RECIBIO LA ORDEN
                                 ESPERAR_3 = 0
+
         
         print("el bucle está operando")
+        
+
         
         if SERIAL.readable() == True:
             LEER = SERIAL.read()
@@ -419,16 +434,3 @@ if name == 'main':
                     temp = 'T'
                     SERIAL.write(temp.encode())
                     print("GRABACION Y ENVIO COMPLETADO ")
-
-# for i in range(0,101,10):
-#    ENVIAR_DATO(CICLO_UTIL,i)
-
-
-# DIMMER = int(OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL))
-# print("VALOR DE DIMER:     " + str(DIMMER) + "   " + str(type(DIMMER)))
-
-# INTERRUP = int(OBTENER_DATO(DEVICE_LABEL,INTERRUPTOR))
-# print("ESTADO INTERRUPTOR: " + str(INTERRUP) + "   " + str(type(INTERRUP)))
-
-# DISPENSADOR = int(OBTENER_DATO(DEVICE_LABEL, COMIDA))
-# print("ESTADO DISPENSADOR: " + str(DISPENSADOR) + "   " + str(type(DISPENSADOR)))
