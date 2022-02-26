@@ -3,15 +3,14 @@
 import requests
 import serial
 import time
-import cv2
+'''import cv2
 import numpy as np
-import time
 import smtplib
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
-from email.encoders import encode_base64
+from email.encoders import encode_base64'''
 
 #-------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
 
@@ -59,20 +58,24 @@ DETENER = False                # PERMISO PARA DETENER GRABACION AUTOMATICAMENTE
 CAMARA  = False                # PERMISO PARA INICIAR GRABACION LO MANDA MAESTRO CON UNA 'P'
 
 #--------------DATOS GRABACION--------------
-URL = 'rtsp://192.168.0.100/live/ch00_1'        # IP estática de la cámara, obtenido desde ONVIF
+
+'''URL = 'rtsp://192.168.0.100/live/ch00_1'        # IP estática de la cámara, obtenido desde ONVIF
 CAPTURA = cv2.VideoCapture(URL)
 FPS = 10
 ANCHO = int(CAPTURA.get(cv2.CAP_PROP_FRAME_WIDTH))
 ALTO = int(CAPTURA.get(cv2.CAP_PROP_FRAME_HEIGHT))
 FORMATO = cv2.VideoWriter_fourcc('X','2','6','4')
-VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
+VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))'''
 
 #-----------DATOS ENVIO CORREO------------------
-CORREO_DESTINO = 'dgomezbernal24@gmail.com,cristiancobos2002@gmail.com'
+
+'''CORREO_DESTINO = 'dgomezbernal24@gmail.com,cristiancobos2002@gmail.com'
 CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
 PASSWORD = 'E-BOT2021'
 smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
-msg = MIMEMultipart()
+msg = MIMEMultipart()'''
+
+#-----------FUNCION PARA EL ENMVIO DE DATOS A UBIDOTS-----------
 
 def ENVIAR_DATO(VARIABLE, VALOR):
 #
@@ -103,6 +106,8 @@ def ENVIAR_DATO(VARIABLE, VALOR):
     return True
 #
 
+#-----------FUNCION PARA EL RESCATE DE DATOS DESDE UBIDOTS-----------
+
 def OBTENER_DATO(device, variable):
 #    
     try:
@@ -115,8 +120,10 @@ def OBTENER_DATO(device, variable):
     except:
         pass
 #
-#------
-def ENVIO_CORREO():
+
+#-----------FUNCION PARA EL ENVIO DE CORREO ELECTRONICO CON EL VIDEO CAPTURADO-----------
+
+'''def ENVIO_CORREO():
 #
     msg['To'] = CORREO_DESTINO
     msg['From'] = CORREO_MAESTRO
@@ -137,9 +144,11 @@ def ENVIO_CORREO():
     server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
     print("GRABACION ENVIADA")
     server.quit()
-#
+#'''
 
-def CAP_VIDEO():
+#-----------FUNCION PARA LA CAPTURA DEL VIDEO POR 20 SEGUNDOS-----------
+
+'''def CAP_VIDEO():
 #  
     DETENER = False
    
@@ -164,23 +173,25 @@ def CAP_VIDEO():
     CAPTURA.release()
     VIDEO_SALIDA.release()
     cv2.destroyAllWindows()
-#
+#'''
 #----
 
-#def RECUPERAR_DATOS ():
+'''def RECUPERAR_DATOS ():
 #
-    #TEMP_CICLO = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
-    #TEMP_INTERRUPTOR = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
-    #TEMP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
-    #TEMP_AGUA = OBTENER_DATO(DEVICE_LABEL, AGUA)
-    #TEMP_CORRIENTE = OBTENER_DATO(DEVICE_LABEL, CORRIENTE)
-    #TEMP_TOMACORRIENTE = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
-#
+    TEMP_CICLO = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
+    TEMP_INTERRUPTOR = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
+    TEMP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
+    TEMP_AGUA = OBTENER_DATO(DEVICE_LABEL, AGUA)
+    TEMP_CORRIENTE = OBTENER_DATO(DEVICE_LABEL, CORRIENTE)
+    TEMP_TOMACORRIENTE = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
+#'''
 
 if name == 'main':
+     
+    #RECUPERAR_DATOS()
     
-    #RECUPERAR DATOS DESDE UBIDOTS 
-    
+    #RECUPERAR DATOS DESDE UBIDOTS
+
     TEMP_CICLO = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
     TEMP_INTERRUPTOR = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
     TEMP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
@@ -206,7 +217,7 @@ if name == 'main':
         TOMA = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
 
         #COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALAMCENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION
-        if INTERRUP != TEMP_INTERRUPTOR:      #Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
+                if INTERRUP != TEMP_INTERRUPTOR:      #Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
             print("El interruptor cambio")
             TEMP_INTERRUPTOR = INTERRUP
             if INTERRUP == 1.0:
@@ -312,12 +323,32 @@ if name == 'main':
         if TOMA != TEMP_TOMACORRIENTE:      #Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
             print("La toma cambio cambio") 
             TEMP_TOMACORRIENTE = TOMA
-            temp = 'F'
-            SERIAL.write(temp.encode())
+            if TOMA == 1:
+                temp = 'F'
+                SERIAL.write(temp.encode())
+                ESPERAR_2 = 1
+                while ESPERAR_2 == 1:
+                        if SERIAL.readable() == True:
+                            LEER = SERIAL.read()
+                            if LEER != bytes(''.encode()):
+                                print(LEER)
+                                if LEER == bytes('F'.encode()): #EL MICRO YA ENVIO Y EL DISPENSADOR RECIBIO LA ORDEN
+                                    ESPERAR_2 = 0
+            elif TOMA == 0:
+                temp = 'G'
+                SERIAL.write(temp.encode())
+                ESPERAR_3 = 1
+                while ESPERAR_3 == 1:
+                        if SERIAL.readable() == True:
+                            LEER = SERIAL.read()
+                            if LEER != bytes(''.encode()):
+                                print(LEER)
+                                if LEER == bytes('N'.encode()): #EL MICRO YA ENVIO Y EL DISPENSADOR RECIBIO LA ORDEN
+                                    ESPERAR_3 = 0
             
-        print("el bucle está operando")        
+        print("el bucle está operando")      
             
-        if SERIAL.readable() == True:
+                if SERIAL.readable() == True:
             LEER = SERIAL.read()
             if LEER != bytes(''.encode()):
                 print(LEER)
@@ -351,13 +382,31 @@ if name == 'main':
                                 ENVIAR_DATO(INTERRUPTOR,0.0)
                                 INTERRUP = TEMP_INTERRUPTOR = 0.0
                                 DIMMER = TEMP_CICLO = float(DUTY)
+                
+                if LEER == bytes('Z'.encode()):
+                    print("EL MAESTRO TIENE UNA CORRIENTE PARA ENVIAR")
+                    temp = 'Z'
+                    SERIAL.write(temp.encode())
+                    COR = 0
+                    while COR == 0:
+                        if SERIAL.readable() == True:
+                            SERIAL.flush()
+                            corriente = SERIAL.readline()
+                            print("LA CORRIENTE RECIBIDA ES : " + str(corriente) + "   " + str(type(corriente)))
+                            COR = 1
+                            temp = 'z'
+                            SERIAL.write(temp.encode())
+                            COR_ENV = float(corriente)
+                            COR_ENV = COR_ENV/100
+                            print("LA CORRIENTE EN MEMORIA ES: " + str(COR_ENV) + "   " + str(type(COR_ENV)))
+                            ENVIAR_DATO(CORRIENTE,COR_ENV)
 
                 #------camara--------
                 if LEER == bytes('P'.encode()):
                     print("PUERTA SE ABRIO")
-                    EMPIEZA_CONTEO = time.time()  # conteo para finalizar grabacion                   
-                    CAP_VIDEO()                   # Llama funciones de captura de video y envio al correo 
-                    ENVIO_CORREO()                  
+                    #EMPIEZA_CONTEO = time.time()  # conteo para finalizar grabacion                   
+                    #CAP_VIDEO()                   # Llama funciones de captura de video y envio al correo 
+                    #ENVIO_CORREO()                  
                     temp = 'T'
                     SERIAL.write(temp.encode())
                     print("GRABACION Y ENVIO COMPLETADO ")
