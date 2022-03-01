@@ -111,7 +111,7 @@ void RECIBIR (void)
  ```
 ### Diagrama de Flujo Maestro Transmisor
 
-![Diagrama de flujo Transmisor Maestro](imagenes/DIAGRAMA_MAESTRO.png)
+![Diagrama de flujo Transmisor Maestro](Imagenes/DIAGRAMA_MAESTRO.png)
 
 ## 2. Recepción de Datos
 
@@ -196,5 +196,5 @@ void RECIBIR (void)
 ```
 ### Diagrama de Flujo Esclavo Receptor
 
-![Diagrama de flujo Transmisor Maestro](imagenes/DIAGRAMA_RECEPTOR.png)
+![Diagrama de flujo Transmisor Maestro](Imagenes/DIAGRAMA_RECEPTOR.png)
 
