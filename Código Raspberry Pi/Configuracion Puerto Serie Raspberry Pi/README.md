@@ -2,7 +2,7 @@
 ## 1. Habilitar puerto TTL:
 Se debe garantizar que los periféricos de la Raspberry estén configurados de la siguiente manera:  
  
-![Configuración Interfaces Raspberry Pi](imagenes/CONF_INTERFACES.png)
+![Configuración Interfaces Raspberry Pi](Imagenes/CONF_INTERFACES.png)
 
 ## 2. Verificar cómo está configurado el puerto serie de la Raspberry:
 Ejecutar el siguiente comando mediante consola:
@@ -13,7 +13,7 @@ ls -l /dev
 
 Se debe visualizar una configuración de los puertos Serie tal como la siguiente:
 
-![Configuración Inicial de Puertos](imagenes/CONF_INICIAL_PUERTOS.png)
+![Configuración Inicial de Puertos](Imagenes/CONF_INICIAL_PUERTOS.png)
  
 
 ## 3. Modificar el archivo de configuración de arranque:
@@ -62,7 +62,7 @@ ls -l /dev
 
 Se debe visualizar la siguiente asignación de puertos vía consola:
 
-![Nueva Configuración de Puertos](imagenes/CONF_FINAL_PUERTOS.png)
+![Nueva Configuración de Puertos](Imagenes/CONF_FINAL_PUERTOS.png)
  
  En este momento ya es funcional el puerto serial en la Raspberry Pi para ser usado por programas Python (.py)
 
