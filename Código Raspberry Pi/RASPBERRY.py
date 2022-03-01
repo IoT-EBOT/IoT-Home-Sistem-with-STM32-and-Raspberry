@@ -4,7 +4,8 @@ import requests
 import serial
 import time
 import os
-#-------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
+
+# -------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
 
 SERIAL = serial.Serial('/dev/ttyAMA0', 9600, timeout=3.0, write_timeout=3.0)  # TTL se_port
 
@@ -42,32 +43,6 @@ TEMP_AGUA = 0.0
 TEMP_CORRIENTE = 0.0
 TEMP_TOMACORRIENTE = 0.0
 
-# ---Parámetros y variables para control de cámara____Datos correo electrónico de órigen del video y los correos que lo reciben---
-
-# EMPIEZA_CONTEO = time.time()   # conteo para finalizar grabacion
-TEMPORIZADOR_GRABACION = 20  # PIERDE TRES SEGUNDOS DE GRABACION
-DETENER = False  # PERMISO PARA DETENER GRABACION AUTOMATICAMENTE
-CAMARA = False  # PERMISO PARA INICIAR GRABACION LO MANDA MAESTRO CON UNA 'P'
-
-# --------------DATOS GRABACION--------------
-
-'''URL = 'rtsp://192.168.0.100/live/ch00_1'        # IP estática de la cámara, obtenido desde ONVIF
-CAPTURA = cv2.VideoCapture(URL)
-FPS = 10
-ANCHO = int(CAPTURA.get(cv2.CAP_PROP_FRAME_WIDTH))
-ALTO = int(CAPTURA.get(cv2.CAP_PROP_FRAME_HEIGHT))
-FORMATO = cv2.VideoWriter_fourcc('X','2','6','4')
-VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))'''
-
-# -----------DATOS ENVIO CORREO------------------
-
-'''CORREO_DESTINO = 'dgomezbernal24@gmail.com,cristiancobos2002@gmail.com'
-CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
-PASSWORD = 'E-BOT2021'
-smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
-msg = MIMEMultipart()'''
-
-
 # -----------FUNCION PARA EL ENMVIO DE DATOS A UBIDOTS-----------
 
 def ENVIAR_DATO(VARIABLE, VALOR):
@@ -98,7 +73,6 @@ def ENVIAR_DATO(VARIABLE, VALOR):
     print("[INFO] Variable actualizada")
     return True
 
-
 #
 
 # -----------FUNCION PARA EL RESCATE DE DATOS DESDE UBIDOTS-----------
@@ -114,64 +88,6 @@ def OBTENER_DATO(device, variable):
         return req.json()['last_value']['value']
     except:
         pass
-
-
-#
-
-# -----------FUNCION PARA EL ENVIO DE CORREO ELECTRONICO CON EL VIDEO CAPTURADO-----------
-
-'''def ENVIO_CORREO():
-#
-    msg['To'] = CORREO_DESTINO
-    msg['From'] = CORREO_MAESTRO
-    msg['Subject'] = 'ALERTA '
-    msg.attach(MIMEText('GRABACION DE ALERTA '))
-    GRABACION = open('/home/pi/Documents/Camara/GRABACION.avi', 'rb')  # RUTA DEL VIDEO A MANDAR
-    adjunto = MIMEBase('multipart', 'encrypted')
-
-    adjunto.set_payload(GRABACION.read())
-    GRABACION.close()
-    encode_base64(adjunto)
-    adjunto.add_header('Content-Disposition', 'attachment', filename='VIDEO GRABADO.mp4')
-    msg.attach(adjunto)
-
-    server = smtplib.SMTP(smtp_server)
-    server.starttls()
-    server.login(CORREO_MAESTRO, PASSWORD)
-    server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
-    print("GRABACION ENVIADA")
-    server.quit()
-#'''
-
-# -----------FUNCION PARA LA CAPTURA DEL VIDEO POR 20 SEGUNDOS-----------
-
-'''def CAP_VIDEO():
-#  
-    DETENER = False
-
-    while True:   
-        ret, FRAME = CAPTURA.read()
-        if ret:
-            VIDEO_SALIDA.write(FRAME)
-            cv2.imshow('VIDEO', FRAME)               
-            TRASCURRIDO = time.time() - EMPIEZA_CONTEO 
-
-            if TRASCURRIDO > TEMPORIZADOR_GRABACION:
-                DETENER = True
-                print("PASARON 10 SEGUNDOS ",TRASCURRIDO)
-
-        else:
-            break
-
-        if cv2.waitKey(1) & DETENER == True:
-            print("VIDEO FINALIZADO ENVIO DE VIDEO A CORREO")        
-            break
-
-    CAPTURA.release()
-    VIDEO_SALIDA.release()
-    cv2.destroyAllWindows()
-#'''
-# ----
 
 '''def RECUPERAR_DATOS ():
 #
@@ -362,7 +278,6 @@ if name == 'main':
         
         print("el bucle está operando")
         
-
         
         if SERIAL.readable() == True:
             LEER = SERIAL.read()
@@ -420,10 +335,9 @@ if name == 'main':
             
                 # ------camara--------
                 if LEER == bytes('P'.encode()):
-                    print("PUERTA SE ABRIO")
-                    # EMPIEZA_CONTEO = time.time()  # conteo para finalizar grabacion                   
-                    # CAP_VIDEO()                   # Llama funciones de captura de video y envio al correo 
-                    # ENVIO_CORREO()                  
+                    print("PUERTA SE ABRIO")                
+                    os.system('python3 CAPTURA_CAMARA.py')  #Llama programa de captura de camara y envio por correo electronico                
                     temp = 'T'
                     SERIAL.write(temp.encode())
                     print("GRABACION Y ENVIO COMPLETADO ")
+                                   
