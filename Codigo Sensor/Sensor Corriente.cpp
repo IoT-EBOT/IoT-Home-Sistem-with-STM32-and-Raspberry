@@ -17,6 +17,8 @@
   
 #define TAMANO          4
 
+#define T_STOP 8333
+
 Serial PC(PA_2,PA_3);//TX,RX
 
 nRF24L01P RADIO(PB_5, PB_4, PB_3, PA_15, PA_12);    // MOSI, MISO, SCK, CSN, CE, IRQ----IRQ NO ESTA DEFINIDO NI CONECTADO, LA RECOMENDACION VIENE DADA POR LA LIBRERIA USADA
@@ -27,7 +29,7 @@ AnalogIn VOL_DC (PA_1);
 InterruptIn F_SUBIDA(PB_0);
 DigitalOut CONTROL(PA_8);
 Timeout TM_OUT;
-//Timer timer;
+Timer timer;
 
 void CONF_GENER (int FRECUENCIA, int POTENCIA, int VELOCIDAD, unsigned long long DIRECCION_RX, int TAMAÑO_D, int TUBERIA);
 void CONF_RADIO (unsigned long long DIRECCION_TX, int TAM_INFO);
@@ -44,9 +46,9 @@ char CONFIRMAR_2 [TAMANO] = {'T','M','O','F'};
 
 unsigned char CALCULAR = 0;
 
-unsigned int T_LEC = 4166;
+//unsigned int T_LEC = 4166;
 
-float TIEMPO = 0;
+float TIEMPO = 0.0;
 
 float LEC_P = 0.0;
 float LEC_DC = 0.0;
@@ -58,6 +60,8 @@ float DIFERENCIA = 0.0;
 
 float COR_PICO = 0.0;
 float COR_RMS = 0.0;
+
+float COR_RMS_TEMP = 0.0;
 
 int DECIMAL  = 0;
 int UNIDAD_1 = 0;
@@ -79,11 +83,13 @@ int main ()
     RADIO.setReceiveMode(); //Modo de RECEPCION ACTIVADO
     RADIO.enable();
     
+    timer.start();
+    
     F_SUBIDA.rise(&FLANCOS);
     
     while (1)
     {
-        if(CALCULAR == 1)
+        while(CALCULAR == 1)
         {
             LEC_P   = SENSOR.read();
             LEC_DC  = VOL_DC.read();
@@ -91,12 +97,18 @@ int main ()
             LEC_VDC = LEC_DC * 3.3;
             DIFERENCIA = LEC_SCP - LEC_VDC;
             COR_PICO = DIFERENCIA / 0.075;
-            COR_RMS = COR_PICO * 0.707;
-            PC.printf(" La diferencia es : %f   \r\n",DIFERENCIA);
-            PC.printf(" La COR_PICO es : %f Ap  \r\n",COR_PICO);
-            PC.printf(" La COR_RMS  es : %f Arms\r\n",COR_RMS);
-            CALCULAR = 0;
+            COR_RMS_TEMP = COR_PICO * 0.707;
+            
+            if(COR_RMS < COR_RMS_TEMP)
+            {
+                COR_RMS = COR_RMS_TEMP;
+                //PC.printf(" La diferencia es : %f   \r\n",DIFERENCIA);
+                //PC.printf(" La COR_PICO es : %f Ap  \r\n",COR_PICO);
+                //PC.printf(" La COR_RMS  es : %f Arms\r\n",COR_RMS);
+            }
         }
+        
+        PC.printf(" La COR_RMS  es : %f Arms\r\n",COR_RMS);
         
         
         if(RADIO.readable())
@@ -105,6 +117,8 @@ int main ()
             RECIBIR();     
             if(RX_DATA [0] == 'L' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'N')
             {
+                CONTROL = 1;
+                COR_RMS = COR_RMS_TEMP = 0.0;
                 RADIO.setTransmitMode();
                 char RESPUESTA = 0;
                 while(RESPUESTA == 0)
@@ -125,6 +139,8 @@ int main ()
             }
             if(RX_DATA [0] == 'L' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'F')
             {
+                CONTROL = 0;
+                COR_RMS = COR_RMS_TEMP = 0.0;
                 RADIO.setTransmitMode();
                 char RESPUESTA = 0;
                 while(RESPUESTA == 0)
@@ -149,16 +165,14 @@ int main ()
             }           
         }
         
-        //PC.printf(" La lectura fue: %f",LEC_P);
-        //PC.printf(" El voltaje es : %f",LEC_SCP);
-        
-        /*TIEMPO = timer.read();
-        if(TIEMPO >= 5.0)
+        TIEMPO = timer.read();
+        if(TIEMPO >= 30.0)
         {
-            timer.stop();
-            timer.reset();
             ENVIARC();
-        }*/
+        }
+        
+        //CADA VEZ QUE SE ENVÍE y SE CONFIRME LA RECEPCION DE LA CORRIENTE POR PARTE DEL AMESTRO SE DEBE BORRAR EL VALOR DE COR_TEMP Y COR_RMS, PARA EVITAR
+        //QUE AL CONECTAR UNA CARGA DIFERENTES EL SISTEMA SIGA ALMACENANDO LA CORRIENTE DE LA CARGA ANTERIOR
     }   
 }
 
@@ -193,11 +207,12 @@ void PREPARAR (int ANCHO, unsigned long long DIRECCION, int TAM_DIR, int RF)
 }
 void FLANCOS (void)
 {
-        TM_OUT.attach_us(&LECTURAS,T_LEC); 
+        TM_OUT.attach_us(&LECTURAS,T_STOP); 
+        CALCULAR = 1;
 }
 void LECTURAS (void)
 {
-    CALCULAR = 1;
+    CALCULAR = 0;
 }
 void ENVIARC (void)
 {
@@ -230,6 +245,8 @@ void ENVIARC (void)
                 RESP = 1;
                 RADIO.setRfFrequency (RF_TOMA);
                 RADIO.setReceiveMode();
+                COR_RMS = COR_RMS_TEMP = 0.0;
+                timer.reset();
             }
         }
     }

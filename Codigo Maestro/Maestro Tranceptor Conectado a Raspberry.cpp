@@ -5,7 +5,7 @@
 /*
  DISPOSITIVO | FRECUENCIA DE TRABAJO | DIRECCION |  USO |
 -------------|-----------------------|-----------|------|
-RASPBERRY    |        2400           | 0x000000  |  YA  |
+RASPBERRY    |        2400           | 0x000002  |  YA  |
 DISPENSADOR  |        2420           | 0x00000A  |  YA  |
 TOMA CORR    |        2440           | 0x00000B  |  YA  |
 DIMMER       |        2460           | 0x00000C  |  YA  |
@@ -66,6 +66,8 @@ char CONF_CIC [TAM_TX] = {'C','U','R','R'};
 char FOOD_ON [TAM_TX] = {'F','D','O','N'};
 char WATE_ON [TAM_TX] = {'W','R','O','N'};
 char CONF_COR [TAM_TX] = {'A','M','P','R'};
+char TOMA_SI [TAM_TX] = {'L','D','O','N'};
+char TOMA_NO [TAM_TX] = {'L','D','O','F'};
 
 int CENTENAS = 0;
 int DECENAS = 0;
@@ -79,7 +81,8 @@ float VALOR_COR = 0.0;
 
 char FG_COMIDA = 0;
 char FG_AGUA = 0;
-char FG_TOMA = 0;
+char TOMA_ON = 0;
+char TOMA_OFF = 0;
 
 char LETRA = ' ';
 
@@ -138,8 +141,14 @@ int main (void)
                 }
                 case 'F':
                 {
-                    FG_TOMA = 1;
+                    TOMA_ON = 1;
                     PC.printf("F:\r\n");
+                    break;
+                }
+                case 'G':
+                {
+                    TOMA_OFF = 1;
+                    PC.printf("G:\r\n");
                     break;
                 }
                     
@@ -194,8 +203,8 @@ int main (void)
         if(FG_COMIDA == 1)
         {
             PC.printf("FUNCION DISPENSAR COMIDA\r\n");
-            char RESP = 0;     //UBICAR 
-            while(RESP == 0)
+            char RESP_1 = 0;     //UBICAR 
+            while(RESP_1 == 0)
             {
                 RADIO.setTransmitMode();
                 PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
@@ -210,7 +219,7 @@ int main (void)
                     RECIBIR();
                     if(RX_DATA[0] == 'D' && RX_DATA[1] == 'F' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
                     {
-                        RESP = 1;
+                        RESP_1 = 1;
                         RADIO.setRfFrequency (MI_FREQ);
                         RADIO.setReceiveMode();
                         RASPBERRY.putc('G');    //RESPONDER QUE SE RECIBIO LA ORDEN
@@ -223,8 +232,8 @@ int main (void)
         if(FG_AGUA == 1)
         {
             PC.printf("FUNCION DISPENSAR AGUA\r\n");
-            char RESP = 0;     //UBICAR 
-            while(RESP == 0)
+            char RESP_2 = 0;     //UBICAR 
+            while(RESP_2 == 0)
             {
                 RADIO.setTransmitMode();
                 PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
@@ -239,7 +248,7 @@ int main (void)
                     RECIBIR();
                     if(RX_DATA[0] == 'D' && RX_DATA[1] == 'A' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
                     {
-                        RESP = 1;
+                        RESP_2 = 1;
                         RADIO.setRfFrequency (MI_FREQ);
                         RADIO.setReceiveMode();
                         RASPBERRY.putc('H');    //RESPONDER QUE SE RECIBIO LA ORDEN
@@ -249,10 +258,64 @@ int main (void)
             }
             FG_AGUA = 0;
         }
-        if(FG_TOMA == 1)
+        if(TOMA_ON == 1)
         {
-            FG_TOMA = 0;
+            PC.printf("FUNCION ENCENDER TOMA\r\n");
+            char RESP_3 = 0;     //UBICAR 
+            while(RESP_3 == 0)
+            {
+                RADIO.setTransmitMode();
+                PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
+                RADIO.write(NRF24L01P_PIPE_P0, TOMA_SI, TAM_TX);
+                PC.printf("RADIO ENVIO MENSAJE \r\n");
+                RADIO.setRfFrequency (MI_FREQ);
+                RADIO.setReceiveMode();
+                wait_ms (RETARDO);
+                if(RADIO.readable())
+                {
+                    PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+                    RECIBIR();
+                    if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
+                    {
+                        RESP_3 = 1;
+                        RADIO.setRfFrequency (MI_FREQ);
+                        RADIO.setReceiveMode();
+                        RASPBERRY.putc('F');    //RESPONDER QUE SE RECIBIO LA ORDEN
+                        PC.printf("RESPONDIO CON UNA F \r\n");
+                    }    
+                }    
+            }
+            TOMA_ON = 0;
         }    
+        if(TOMA_OFF == 1)
+        {
+            PC.printf("FUNCION APAGAR TOMA\r\n");
+            char RESP_4 = 0;     //UBICAR 
+            while(RESP_4 == 0)
+            {
+                RADIO.setTransmitMode();
+                PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
+                RADIO.write(NRF24L01P_PIPE_P0, TOMA_NO, TAM_TX);
+                PC.printf("RADIO ENVIO MENSAJE \r\n");
+                RADIO.setRfFrequency (MI_FREQ);
+                RADIO.setReceiveMode();
+                wait_ms (RETARDO);
+                if(RADIO.readable())
+                {
+                    PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+                    RECIBIR();
+                    if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
+                    {
+                        RESP_4 = 1;
+                        RADIO.setRfFrequency (MI_FREQ);
+                        RADIO.setReceiveMode();
+                        RASPBERRY.putc('N');    //RESPONDER QUE SE RECIBIO LA ORDEN
+                        PC.printf("RESPONDIO CON UNA N \r\n");
+                    }    
+                }    
+            }
+            TOMA_OFF = 0;
+        } 
         if(RADIO.readable())
         {           
             PC.printf("ALGO LLEGO\r\n");
@@ -353,9 +416,9 @@ int main (void)
                 RADIO.setRfFrequency(MI_FREQ);
                 RADIO.setReceiveMode();
  
-                DECIMAL  = (RX_DATA [0] - 48);
-                UNIDAD_1 = ((RX_DATA [1] - 48) /10);
-                UNIDAD_2 = ((RX_DATA [2] - 48) /100);  
+                DECIMAL  = (RX_DATA [0] - 48) * 100;
+                UNIDAD_1 = (RX_DATA [1] - 48) *10;
+                UNIDAD_2 = (RX_DATA [2] - 48);  
                 
                 VALOR_COR = DECIMAL + UNIDAD_1 + UNIDAD_2;
                               
