@@ -3,22 +3,8 @@
 import requests
 import serial
 import time
-<<<<<<< HEAD
 import os
 #-------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
-=======
-
-'''import cv2
-import numpy as np
-import smtplib
-
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email.encoders import encode_base64'''
-
-# -------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
->>>>>>> c3858673e61f04f53d47c78f6e51515c3e36cb00
 
 SERIAL = serial.Serial('/dev/ttyAMA0', 9600, timeout=3.0, write_timeout=3.0)  # TTL se_port
 
