@@ -2,7 +2,7 @@
 
 Para controlar el ángulo de disparo para cada semiciclo de la señal sinusoidal de la red doméstica (120V-60Hz para Colombia), es necesario identificar el instante de tiempo en el cual la señal tiene un valor de 0V, pues este punto será la referencia que tendremos para realizar los cálculos necesarios y realizar la activación de la etapa de potencia en el momento justo según la orden enviada desde Ubidots.
 
-![Detector de Cruce por Cero](/imagenes/ZCD.png)
+![Detector de Cruce por Cero](/Imagenes/ZCD.png)
 
 La anterior figura describe el circuito de cruce por cero desarrollado, el cual está encargado de generar una señal cuadrada a la salida (SIGNALZCD), donde los flancos de subida y de baja coinciden con el punto exacto donde la señal de la red doméstica toma un valor de 0V.
 
