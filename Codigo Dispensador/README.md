@@ -8,8 +8,7 @@ Para la activación eléctrica del motor DC (al que se encuentra acoplado el tor
 
 Podemos observar que este módulo sólo requiere activar una serie de cargas en DC para la dispensación de comida y bebida, por lo cual, el microcontrolador se encarga de modificar dos buses digitales de 2 bits cada uno para el control del puente H, módulo que se encuentra separado del sistema diseñado.
 
-
-![Etapa de Control y Alimentación](https://github.com/IoT-EBOT/IoT-Home-Sistem-with-STM32-and-Raspberry/blob/main/Codigo%20Dispensador/Imagenes/CONTROL.png)
+![Etapa de Control y Alimentación](Imagenes/CONTROL.png.png)
 
 En la figura X podemos observar cómo efectivamente el microcontrolador cuenta con el radio de comunicación para recibir las órdenes definidas desde Ubidots, y, además, posee 3 conectores clave para el uso del puente H externo, J4 que es una salida de limentación para el circuito integrado L298N, pues el módulo adquirido no posee regulador interno. Los conectores J3 y J5 están conectados al microcontrolador y son las señales de control para los dos canales del L298N y por lo tanto son quienes definen la activación o desactivación del motor acoplado al tornillo sin fin y/o la motobomba.
 
