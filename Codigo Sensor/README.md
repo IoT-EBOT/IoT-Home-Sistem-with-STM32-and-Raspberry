@@ -5,7 +5,7 @@ El funcionamiento del sensor de corriente no invasivo (HMCT103C) consiste 	un tr
 Para poder leer la corriente entregada a la carga, es necesario conectar en 	paralelo una resistencia de Shunt al transformador de corriente, cuya función 	es entregar una caída de tención que es directamente proporcional a la 	corriente inducida en el bobinado del sensor.
 
 
-![Detector de Cruce por Cero](imagenes/SEÑAL.png)
+![Detector de Cruce por Cero](Imagenes/SEÑAL.png)
 
 En la anterior figura se puede observar el circuito para el tratamiento de la señal captada por el sensor de corriente. Como resistencia de Shunt se optó por utilizar una resistencia variable lineal (RV1), ya que facilita la programación para los cálculos del microcontrolador.
 
@@ -16,15 +16,15 @@ La caída de tensión en la resistencia variable ingresa a un amplificador difer
 La señal de salida (SIGNAL) es ingresada al ADC del microcontrolador y 	representa la corriente sensada por el sistema.
 
 
-![Detector de Cruce por Cero](imagenes/ZCD.png)
+![Detector de Cruce por Cero](Imagenes/ZCD.png)
 
 La anterior figura muestra un circuito detector de cruce por cero idéntico al 	utilizado en el módulo dimmer, pues cada vez que exista un consumo de 	corriente, este circuito genera una señal cuadrada que es la 	referencia utilizada por el microcontrolador para saber en qué momento 	iniciar las lecturas de los puertos analógicos.
 
-![Detector de Cruce por Cero](imagenes/REFERENCIA.png)
+![Detector de Cruce por Cero](Imagenes/REFERENCIA.png)
 
 Es importante mencionar que en este circuito es necesario una referencia de 	voltaje estable, pues a diferencia del dimmer, la señal AC (correspondiente a 	la corriente entregada a una carga resistiva) es ingresada al ADC del 	microcontrolador, y para que los cálculos programados concuerden con la 	lectura real, se requiere de que el nivel DC sumado a la señal sea estable en 	el tiempo, además que permite garantizar que a medida que la corriente 	se 	incrementa (la amplitud de la señal crece), los límites de lectura para el 	semiciclo positivo y negativo sean los mismos (recordemos que el voltaje 	de lectura del ADC se encuentre entre 0 y 3.3V).
 
-![Detector de Cruce por Cero](imagenes/CONTROL.png)
+![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
 La etapa de control está compuesta por el microcontrolador, encargado de realizar los cálculos necesarios, relacionar la señal leída en el ADC con la corriente entregada a la carga. El radio de comunicación se encarga de enviar la corriente leída por el microcontrolador al maestro y recibir las ordenes de activación o desactivación de la etapa de potencia.}
 
@@ -34,7 +34,7 @@ La etapa de potencia para este módulo tiene como objeto habilitar o deshabilita
 
 Los terminales J3 y J4 representan perforaciones realizadas a la PCB, cuyo objeto es soldar un cable entre ellos que será el que atravesará el sensor de corriente.
 
-![Detector de Cruce por Cero](imagenes/ALIMENTACION.png)
+![Detector de Cruce por Cero](Imagenes/ALIMENTACION.png)
 
 La figura anterior muestra la etapa de alimentación del sistema.
 
@@ -326,10 +326,10 @@ void ENVIARC (void)
 
 ## Diagrama de Flujo General Módulo Sensor de Corriente
 
-![Detector de Cruce por Cero](imagenes/DIAGRAMA_GENERAL.png)
+![Detector de Cruce por Cero](Imagenes/DIAGRAMA_GENERAL.png)
 
 ## Diagramas de Flujo Interrupciones Módulo Sensor de Corriente
 
-![Detector de Cruce por Cero](imagenes/INTERRUPCION_1.png)
+![Detector de Cruce por Cero](Imagenes/INTERRUPCION_1.png)
 
 # SE DEBE ACTUALIZAR LOS DIAGRAMAS DE FLUJO
