@@ -203,8 +203,8 @@ void APAGAR_AGUA (void)
 ```
 
 ## Diagrama de Flujo General Módulo Dispensador
-![Detector de Cruce por Cero](imagenes/DIAGRAMA_GENERAL.png)
+![Detector de Cruce por Cero](https://github.com/IoT-EBOT/IoT-Home-Sistem-with-STM32-and-Raspberry/blob/main/Codigo%20Dispensador/Imagenes/DIAGRAMA_GENERAL.png)
 
 ## Diagramas de Flujo Interrupciones Módulo Ddispensador
 
-![Detector de Cruce por Cero](imagenes/INTERRUPCION_1.png)
+![Detector de Cruce por Cero](https://github.com/IoT-EBOT/IoT-Home-Sistem-with-STM32-and-Raspberry/blob/main/Codigo%20Dispensador/Imagenes/INTERRUPCION_1.png)
