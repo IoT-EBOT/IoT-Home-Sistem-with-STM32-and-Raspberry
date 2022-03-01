@@ -71,9 +71,9 @@ Como resultado, la señal de DISPARO es una señal cuadrada, de 120 Hz, alineada
 
 La etapa de potencia está compuesta por un optoacoplador con salida de TRIAC sin circuito de detección de cruce por cero (para un control arbitrario del TRIAC), un BT138 para cargas de máximo 12A.Al TRIAC de potencia se le adicionó una red Snubber para evitar falsos disparos en el gatillo y se provee la inclusión de otra red Snubber para cargas inductivas (R14 - C6).
 
-![Detector de Cruce por Cero](imagenes/POTENCIA.png)
+![Detector de Cruce por Cero](Imagenes/POTENCIA.png)
 
-![Detector de Cruce por Cero](imagenes/ALIMENTACION.png)
+![Detector de Cruce por Cero](Imagenes/ALIMENTACION.png)
 
 
 ## Código Completo Módulo Dimmer
