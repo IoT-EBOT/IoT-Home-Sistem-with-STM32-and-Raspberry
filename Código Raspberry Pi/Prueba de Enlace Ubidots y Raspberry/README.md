@@ -81,7 +81,7 @@ if __name__ == '__main__':
  ```
 ### Diagrama de Flujo Envío de Información a Ubidots
 
-![Diagrama de flujo envío de información a Ubidots](imagenes/DIAGRAMA_ENVIAR_INFO.png)
+![Diagrama de flujo envío de información a Ubidots](Imagenes/DIAGRAMA_ENVIAR_INFO.png)
 
 ## 2. RESCATE DE INFORMACIÓN DESDE LA NUBE
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 ```
 ### Diagrama de Flujo Rescate de Información desde Ubidots
 
-![Diagrama de flujo Transmisor Maestro](imagenes/DIAGRAMA_RESCATAR_INFO.png)
+![Diagrama de flujo Transmisor Maestro](Imagenes/DIAGRAMA_RESCATAR_INFO.png)
 
 ## 3. CÓDIGO UNIFICADO
 Finalmente, las pruebas realizadas consistieron en unificar los códigos proporcionados por la plataforma modificándolos para el envío y rescate de información 1 dato a la vez, esto con el fin de optimizar el tiempo de envío de información, facilitar la interpretación del algoritmo, y tener un mayor control sobre los procesos que este mismo realiza.
@@ -217,4 +217,4 @@ if _name_ == '_main_':
 ```
 ### Diagrama de Flujo Rescate y Envío de Información a Ubidots
 
-![Diagrama de flujo Transmisor Maestro](imagenes/DIAGRAMA_UNIFICADO.png)
+![Diagrama de flujo Transmisor Maestro](Imagenes/DIAGRAMA_UNIFICADO.png)
