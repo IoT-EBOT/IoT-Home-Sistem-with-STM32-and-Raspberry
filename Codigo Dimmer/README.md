@@ -2,7 +2,7 @@
 
 Para controlar el ángulo de disparo para cada semiciclo de la señal sinusoidal de la red doméstica (120V-60Hz para Colombia), es necesario identificar el instante de tiempo en el cual la señal tiene un valor de 0V, pues este punto será la referencia que tendremos para realizar los cálculos necesarios y realizar la activación de la etapa de potencia en el momento justo según la orden enviada desde Ubidots.
 
-![Detector de Cruce por Cero](imagenes/ZCD.png)
+![Detector de Cruce por Cero](Imagenes/ZCD.png)
 
 La anterior figura describe el circuito de cruce por cero desarrollado, el cual está encargado de generar una señal cuadrada a la salida (SIGNALZCD), donde los flancos de subida y de baja coinciden con el punto exacto donde la señal de la red doméstica toma un valor de 0V.
 
@@ -16,7 +16,7 @@ La señal filtrada y montada sobre un nivel DC es llevada a un amplificador oper
 La salida del comparador no puede ser conectada directamente al microcontrolador, pues el voltaje de alimentación del TL084 es de 5V DC y su voltaje de saturación tiende a acercarse a dicho valor, mientras que el STM32 soporta voltajes de hasta 3.3V en sus terminales de entrada. Esto nos lleva a conectar un transistor a la salida del comparador, con el fin de obtener la señal de salida (señal cuadrada de cruce por cero - SIGNALZCD) con valores de 3.3V para un valor ALTO y así evitar daños en el microcontrolador.
 Una vez tratada la señal de la red doméstica para detectar el cruce por cero, el control de ángulo de disparo es determinado por el microcontrolador según el porcentaje definido por el usuario desde Ubidots, pues dicho porcentaje será el entregado a la carga tanto en el semiciclo positivo, como en el negativo.
 
-![Detector de Cruce por Cero](imagenes/CONTROL.png)
+![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
 En la anterior figura se observa que se adicionaron 2 conectores a los cuales irán conectados 3 botones capacitivos los cuales permiten variar el ciclo útil de la señal de disparo (aumentar o disminuir) o apagar directamente la carga.
 
@@ -71,9 +71,9 @@ Como resultado, la señal de DISPARO es una señal cuadrada, de 120 Hz, alineada
 
 La etapa de potencia está compuesta por un optoacoplador con salida de TRIAC sin circuito de detección de cruce por cero (para un control arbitrario del TRIAC), un BT138 para cargas de máximo 12A.Al TRIAC de potencia se le adicionó una red Snubber para evitar falsos disparos en el gatillo y se provee la inclusión de otra red Snubber para cargas inductivas (R14 - C6).
 
-![Detector de Cruce por Cero](imagenes/POTENCIA.png)
+![Detector de Cruce por Cero](Imagenes/POTENCIA.png)
 
-![Detector de Cruce por Cero](imagenes/ALIMENTACION.png)
+![Detector de Cruce por Cero](Imagenes/ALIMENTACION.png)
 
 
 ## Código Completo Módulo Dimmer

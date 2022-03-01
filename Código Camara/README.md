@@ -13,7 +13,7 @@ A continuación, se describe los pasos desarrollados para la preparación de la 
 sudo apt-get install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev libqtgui4 libqt4-test
 ```
 
-![1](imagenes/1.png)
+![1](Imagenes/1.png)
 
 ## 2. Instalación OpenCV 4 con sus módulos principales 
 
@@ -21,7 +21,7 @@ sudo apt-get install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-
 pip3 install opencv-contrib-python==4.1.0.25
 ```
 
-![2](imagenes/2.png)
+![2](Imagenes/2.png)
 
 ## 3. Comprobación de la instalación  
 
@@ -38,25 +38,25 @@ import cv2
 cv2.__version__
 ```
 
-![3](imagenes/3.png)
+![3](Imagenes/3.png)
 
 # Desarrollo Programa Python Para Grabación de Video
 
 Para comunicar la cámara IP con la Raspberry PI 4 es necesario asignar una IP estática para la cámara en la red local. La aplicación V380 PRO proporcionada por el fabricante de la cámara, nos permite configurarla.
 
-![Configuración Cámara](imagenes/CONF_CAMARA.png)
+![Configuración Cámara](Imagenes/CONF_CAMARA.png)
 
 Esto es necesario ya que se requiere conocer la dirección URL de RTSP (Protocolo de transmisión en tiempo real) de la cámara IP, este URL lo podemos conocer ingresando la nueva IP estática de la cámara en el programa ONVIF.
 
-![ONVIF](imagenes/ONVIF.png)
+![ONVIF](Imagenes/ONVIF.png)
 
 Una vez conocida la URL de RTSP, ya se puede configurar los parámetros necesarios para la captura de video.
 
-![CAMERA_DATA](imagenes/CAMERA_DATA.png)
+![CAMERA_DATA](Imagenes/CAMERA_DATA.png)
 
 En este bloque de código se configura los parámetros que tendrá el video: ancho, alto, y fotogramas por segundo. También se debe configurar el formato en el cual esta codificado el video, y finalmente, el nombre que recibirá la grabación al guardarse. 
 
-![GRABAR](imagenes/GRABAR.png)
+![GRABAR](Imagenes/GRABAR.png)
 
 Para enviar el video generado por la alerta al correo electrónico del usuario deben proporcionarse los parámetros del Host y el puerto SMTP (Protocolo simple de transferencia de correo). En este caso se usó Gmail, pero se pueden usar otros servicios de correo electrónico.
 
@@ -72,31 +72,31 @@ Los puertos SMTP más usados son: 25, 465, 587, 2525. El puerto 25 es el puerto 
 
 Además, debe proporcionarse un correo electrónico con su respectiva contraseña, este debe contar con acceso a aplicaciones poco seguras o servicios de terceros. Este correo será utilizado como remitente a la hora en enviar el video de la apertura de la puerta al usuario. 
 
-![PERMISO](imagenes/PERMISO.png)
+![PERMISO](Imagenes/PERMISO.png)
 
-![CORREO DATA](imagenes/CORREO_DATA.png)
+![CORREO DATA](Imagenes/CORREO_DATA.png)
 
 Una vez finalizado el proceso de captura de video, el video será almacenado en una ruta especifica y enviado al correo electrónico, dicho video será sobrescrito con cada nueva alerta. 
 
 ## Diagrama de Flujo Código en Python
 
-![DIAGRAMA PYTHON](imagenes/DIAGRAMA_PYTHON.png)
+![DIAGRAMA PYTHON](Imagenes/DIAGRAMA_PYTHON.png)
 
 # FALTA ADJUNTAR CÓDIGO EN PYTHON
 
 ## Hardware módulo Control Cámara
 
-![ALIMENTACIÓN](imagenes/ALIMENTACION.png)
+![ALIMENTACIÓN](Imagenes/ALIMENTACION.png)
 
 En la anterior figura se muestra la etapa de alimentación del módulo de control.
 
-![INTERRUPTOR](imagenes/INTERRUPTOR.png)
+![INTERRUPTOR](Imagenes/INTERRUPTOR.png)
 
 La anterior figura muestra un circuito resistivo tipo pull up con antirrebote, ya que el sensor magnético es en esencia un interruptor mecánico activado mediante un campo magnético (Reed switch). Al ser accionado con la apertura de la puerta cambia su estado, por lo cual el circuito antirrebote es indispensable para evitar falsos disparos en las interrupciones por flancos del microcontrolador. También se observa un led encargado de indicar el cambio de estado del sensor.
 
-![FUNC_SEN](imagenes/FUNC_SEN.png)
+![FUNC_SEN](Imagenes/FUNC_SEN.png)
 
-![CONTROL](imagenes/CONTROL.png)
+![CONTROL](Imagenes/CONTROL.png)
 
 ## Código Módulo de Control Cámara
 ```c
@@ -294,4 +294,3 @@ void ENVIAR_A(void)
 ```
 
 # FALTA ADJUNTAR DIAGRAMA DE FLUJO
-
