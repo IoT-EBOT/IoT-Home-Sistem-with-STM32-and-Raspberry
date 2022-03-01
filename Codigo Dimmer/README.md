@@ -16,7 +16,7 @@ La señal filtrada y montada sobre un nivel DC es llevada a un amplificador oper
 La salida del comparador no puede ser conectada directamente al microcontrolador, pues el voltaje de alimentación del TL084 es de 5V DC y su voltaje de saturación tiende a acercarse a dicho valor, mientras que el STM32 soporta voltajes de hasta 3.3V en sus terminales de entrada. Esto nos lleva a conectar un transistor a la salida del comparador, con el fin de obtener la señal de salida (señal cuadrada de cruce por cero - SIGNALZCD) con valores de 3.3V para un valor ALTO y así evitar daños en el microcontrolador.
 Una vez tratada la señal de la red doméstica para detectar el cruce por cero, el control de ángulo de disparo es determinado por el microcontrolador según el porcentaje definido por el usuario desde Ubidots, pues dicho porcentaje será el entregado a la carga tanto en el semiciclo positivo, como en el negativo.
 
-![Detector de Cruce por Cero](imagenes/CONTROL.png)
+![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
 En la anterior figura se observa que se adicionaron 2 conectores a los cuales irán conectados 3 botones capacitivos los cuales permiten variar el ciclo útil de la señal de disparo (aumentar o disminuir) o apagar directamente la carga.
 
