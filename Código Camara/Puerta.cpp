@@ -9,13 +9,14 @@
 #define MI_FREQ_MST 2400
 #define DIR_MAESTRO 0x000002   //DIRECCION DE RECEPCION DEL MAESTRO
 
-#define RF_CAMARA 2480
-#define DIR_CAMARA 0x00000D
-#define POTENCIA_T      0
-#define VEL_T           250
-#define TAMANO_DIR      3
-  
-#define TAMANO          4
+#define RF_CAMARA   2480
+#define DIR_CAMARA  0x00000D
+#define POTENCIA_T  0
+#define VEL_T       250
+#define TAMANO_DIR  3
+#define TAMANO      4
+
+#define INTEN       3
 
 Serial PC(PA_2,PA_3);//TX,RX
 
@@ -37,6 +38,8 @@ char TX_DATA [TAMANO];
 //-------VARiABLES PARA LA CAMARA---------
 char ALERTA  = 0;
 char PERMISO = 0; 
+char CONT = 0; 
+char RESP = 0;
 
 int main ()
 {   
@@ -79,9 +82,10 @@ int main ()
         {
             PC.printf("PUERTA CERRADA\r\n");  
             INDICADOR = 0;  
-            wait_ms (1000);  
-            //ALERTA = 1;     
-            PERMISO = 0;                 
+            wait_ms (1000);      
+            PERMISO = 0;  
+            RESP = 0; 
+            CONT = 0;           
         }
     }                                                                        
 }
@@ -95,8 +99,8 @@ void CONF_GENER (int FRECUENCIA, int POTENCIA, int VELOCIDAD, unsigned long long
 }
 void CONF_RADIO (unsigned long long DIRECCION_TX, int TAM_INFO)
 {
-    RADIO.setTxAddress(DIRECCION_TX, TAMANO_DIR);              //Configuracion de DIRECCION de TRANSMISION (DIRECCION, TAMAÑO de la DIRECCION en bytes) LA TUBERIA va directamente LIGADA a la configurada en la RECEPCION
-    RADIO.setTransferSize(TAM_INFO);                           //ESTABLECER el TAMAÑO en BYTES de la TRANSFERENCIA 
+    RADIO.setTxAddress(DIRECCION_TX, TAMANO_DIR);            //Configuracion de DIRECCION de TRANSMISION (DIRECCION, TAMAÑO de la DIRECCION en bytes) LA TUBERIA va directamente LIGADA a la configurada en la RECEPCION
+    RADIO.setTransferSize(TAM_INFO);                         //ESTABLECER el TAMAÑO en BYTES de la TRANSFERENCIA 
 }    
 void RECIBIR (void)
 {
@@ -121,9 +125,6 @@ void ENVIAR_A(void)
     TX_DATA [1] = 'P';
     TX_DATA [2] = 'A';
     TX_DATA [3] = 'D';
-    //
-    char RESP = 0;    
-    char CONT = 0; 
      
     while(RESP == 0)
     {
@@ -136,7 +137,7 @@ void ENVIAR_A(void)
         wait_ms (RETARDO);  
         
         CONT = CONT + 1;  
-        if(CONT == 5)
+        if(CONT == INTEN)
         {
             PERMISO = 1;
             RESP = 1;           
@@ -152,10 +153,13 @@ void ENVIAR_A(void)
                 PC.printf("SE CONFIRMO LA ALERTA, INICIO GRABACION Y EL ENVIO \r\n");
                 RESP = 1;
                 ALERTA = 0;
-                PERMISO = 1;                           
+                PERMISO = 1;  
+                CONT = INTEN;
+                                      
                 RADIO.setTransmitMode();
                 RADIO.setRfFrequency(MI_FREQ_MST);
             }               
         }           
     }   
 }
+
