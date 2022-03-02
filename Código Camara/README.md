@@ -9,7 +9,7 @@ El sistema de monitoreo está encargado de detectar la apertura de la puerta med
 A continuación, se describe los pasos desarrollados para la preparación de la Raspberry Pi con las librerías mencionadas.
 
 ## 1. Instalación de paquetes para manejo de datos de video
-```linux
+```Shell:
 sudo apt-get install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev libqtgui4 libqt4-test
 ```
 
@@ -17,7 +17,7 @@ sudo apt-get install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-
 
 ## 2. Instalación OpenCV 4 con sus módulos principales 
 
-```linux
+```Shell
 pip3 install opencv-contrib-python==4.1.0.25
 ```
 
@@ -25,16 +25,16 @@ pip3 install opencv-contrib-python==4.1.0.25
 
 ## 3. Comprobación de la instalación  
 
-```linux
+```Shell
 python3
 
 ```
 
-```linux
+```Shell
 import cv2
 ```
 
-```linux
+```Shell
 cv2.__version__
 ```
 
