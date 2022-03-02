@@ -146,13 +146,13 @@ int main ()
     RADIO.powerUp();                                                                             //Radio ENCENDIDO y en modo STANDBY
     CONF_GENER (RF_CAMARA, POTENCIA_T, VEL_T, DIR_CAMARA, TAMANO_DIR, NRF24L01P_PIPE_P0);                     //CONFIGURACION INICIAL radio
     CONF_RADIO (DIR_MAESTRO, TAMANO); 
-    PC.printf("***CONF_INICIAL**\r\n");                              //DIRECCION INICIAL de Transmision
+    PC.printf("******CONF_INICIAL*******\r\n");                              //DIRECCION INICIAL de Transmision
     PC.printf( "nRF24L01+ Frequency    : %d MHz\r\n",  RADIO.getRfFrequency() );
     PC.printf( "nRF24L01+ Output power : %d dBm\r\n",  RADIO.getRfOutputPower() );
     PC.printf( "nRF24L01+ Data Rate    : %d kbps\r\n", RADIO.getAirDataRate() );
     PC.printf( "nRF24L01+ TX Address   : 0x%010llX\r\n", RADIO.getTxAddress() );
     PC.printf( "nRF24L01+ RX Address   : 0x%010llX\r\n", RADIO.getRxAddress() );
-    PC.printf("*******\r\n");
+    PC.printf("*****************\r\n");
     //RADIO.setReceiveMode(); //Modo de RECEPCION ACTIVADO
     RADIO.setTransmitMode();    // MANDA TODO EL TIEMPO EL ESTADO 
     RADIO.enable();
@@ -185,36 +185,6 @@ int main ()
             //ALERTA = 1;     
             PERMISO = 0;                 
         }
-        
-        
-        /*
-        if(SENSOR_PUERTA == 1)
-        {
-            PC.printf("PUERTA ABIERTA \r\n");   
-            wait_ms (RETARDO);             
-            INDICADOR = 1;  
-            ALERTA = 1;                         
-                                    
-            while(ALERTA == 1 && PERMISO == 0)
-            {
-                for (int i = 0; i<4;i++)        // LIMPIA POR SI QUEDO DE LA ANTERIOR ALERTA 
-                {
-                    TX_DATA[i] = ' ';
-                }  
-                ENVIAR_A();                     //ENVIA                      
-                //ALERTA = 0;                     //ENVIA UNA SOLA ALERTA                           
-            }               
-        }
-        
-        if(SENSOR_PUERTA == 0)// NO HACE NADA ** PONER POSIBLE BOTON EN UBIDOTS PARA GRABAR CON PUERTA CERRADA 
-        {
-            PC.printf("PUERTA CERRADA  \r\n"); 
-            ALERTA = 1;    
-            INDICADOR = 0;  
-            PERMISO = 0;
-            wait_ms (RETARDO);
-        } 
-        */           
     }                                                                        
 }
 
@@ -249,7 +219,7 @@ void PREPARAR (int ANCHO, unsigned long long DIRECCION, int TAM_DIR, int RF)
 
 void ENVIAR_A(void)
 {
-    TX_DATA [0] = 'S';          //ENVIA LAERTA QUE SE ABRIO LA PUERTA AL MAESTRO 
+    TX_DATA [0] = 'S';          //ENVIA ALERTA QUE SE ABRIO LA PUERTA AL MAESTRO 
     TX_DATA [1] = 'P';
     TX_DATA [2] = 'A';
     TX_DATA [3] = 'D';
