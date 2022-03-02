@@ -76,6 +76,7 @@ Obsérvese que el valor de la corriente RMS solo es actualizado cada vez que se 
 #include "nRF24L01P.h"
 
 #define RETARDO       2000
+#define REPETIR_ENVIO 20
 
 #define MI_FREQ_MST 2400
 #define DIR_MAESTRO 0x000002   //DIRECCION DE RECEPCION DEL MAESTRO
@@ -287,6 +288,8 @@ void LECTURAS (void)
 }
 void ENVIARC (void)
 {
+    int INTENTOS = 0;
+    
     DECIMAL  = (COR_RMS - int(COR_RMS))*100;     
     UNIDAD_1 = (DECIMAL / 10);
     UNIDAD_2 = (DECIMAL % 10);
@@ -294,7 +297,7 @@ void ENVIARC (void)
     TX_DATA [0] = int(COR_RMS) + 48;         
     TX_DATA [1] = UNIDAD_1 + 48;
     TX_DATA [2] = UNIDAD_2 + 48;
-    TX_DATA [3] = 'Z'; // lo q quiera para confirmar
+    TX_DATA [3] = 'Z';
     
     //
     char RESP = 0;     //UBICAR 
@@ -314,11 +317,24 @@ void ENVIARC (void)
             if(RX_DATA[0] == 'A' && RX_DATA[1] == 'M' && RX_DATA[2] == 'P' && RX_DATA[3] == 'R')
             {
                 RESP = 1;
+                INTENTOS = 0;
                 RADIO.setRfFrequency (RF_TOMA);
                 RADIO.setReceiveMode();
                 COR_RMS = COR_RMS_TEMP = 0.0;
                 timer.reset();
             }
+        }
+        
+        INTENTOS = INTENTOS + 1;
+        
+        if (INTENTOS >= REPETIR_ENVIO)
+        {
+            RESP = 1;
+            RADIO.setRfFrequency (RF_TOMA);
+            RADIO.setReceiveMode();
+            COR_RMS = COR_RMS_TEMP = 0.0;
+            timer.reset();
+            INTENTOS = 0;
         }
     }
 }
