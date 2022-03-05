@@ -12,8 +12,12 @@ DIMMER       |        2460           | 0x00000C  |  YA  |
 CAMARA-PUERTA|        2480           | 0x00000D  |  YA  |
 */   
 
+//------------------------------------------------------------------------ LIBRERIAS ---------------------------------------------------------------
+
 #include "mbed.h"
 #include "nRF24L01P.h"
+
+//------------------------------------------------------------------------ DEFINICIONES ---------------------------------------------------------------
 
 #define MI_FREQ 2400
 #define POT  0
@@ -37,22 +41,27 @@ CAMARA-PUERTA|        2480           | 0x00000D  |  YA  |
 
 #define RETARDO 2000
 
+//------------------------------------------------------------------------ CREACION DE OBJETOS ---------------------------------------------------------------
 
 nRF24L01P RADIO(PB_5, PB_4, PB_3, PA_15, PA_12);    // MOSI, MISO, SCK, CSN, CE, IRQ
 Serial RASPBERRY(PA_9,PA_10);  //TX,RX
 Serial PC(PA_2,PA_3);  //TX,RX
 DigitalOut ON(PC_13);
 
+//------------------------------------------------------------------------ DEFINICION DE FUNCIONES ---------------------------------------------------------------
+
 void CONF_INIC (int FRECUENCIA, int POTENCIA, int VELOCIDAD, unsigned long long DIRECCION, int ANCHO, int TUBERIA);
 void ESTADO_I (void);
 void PREPARAR (int ANCHO, unsigned long long DIRECCION, int TAM_DIR, int RF);
 void RECIBIR (void);
 void ENVIAR_CICLO (void);
+void LEER_RASPBERRY (void);
+void ENVIAR_ALERTAS (void);
+
+//------------------------------------------------------------------------ VARIABLES GLOBALES ---------------------------------------------------------------
 
 char DATA_TX [TAM_TX];
 char RX_DATA [TAM_TX];
-int  TX_CONT = 0;
-int RECIBO  = 1;
 
 char OPCION = 0;
 
@@ -68,6 +77,7 @@ char WATE_ON [TAM_TX] = {'W','R','O','N'};
 char CONF_COR [TAM_TX] = {'A','M','P','R'};
 char TOMA_SI [TAM_TX] = {'L','D','O','N'};
 char TOMA_NO [TAM_TX] = {'L','D','O','F'};
+char CAMARA_OK [TAM_TX] = {'S','G','Y','E'};
 
 int CENTENAS = 0;
 int DECENAS = 0;
@@ -86,10 +96,24 @@ char TOMA_OFF = 0;
 
 char LETRA = ' ';
 
-char CONFIRMA_GV = 0;
+char E_CICLO = 1;
+char E_COR = 1; 
+char E_CAMARA = 1;
+
+char ERF_CICLO = 1;
+char ERF_INTERRUP_OFF = 1;
+char ERF_COMIDA = 1;
+char ERF_AGUA = 1;
+char ERF_TOMA_ON = 1;
+char ERF_TOMA_OFF = 1;
+
+char CRF_CAMARA = 1;
+char CRF_DIMMER = 1;
+char CRF_CORRIENTE = 1;
 
 int main (void)
 {
+    //------------------------------------------------------------------------ CONFIGURACION DE RADIO ---------------------------------------------------------------
     ON = 1;
     RADIO.powerUp();
     CONF_INIC (MI_FREQ, POT, VELO, DIR_MAESTRO, TAM_DIRECCIONES, NRF24L01P_PIPE_P0);
@@ -101,270 +125,93 @@ int main (void)
     PC.printf( "nRF24L01+ Data Rate    : %d kbps\r\n", RADIO.getAirDataRate() );
     PC.printf( "nRF24L01+ TX Address   : 0x%010llX\r\n", RADIO.getTxAddress() );
     PC.printf( "nRF24L01+ RX Address   : 0x%010llX\r\n", RADIO.getRxAddress() );
+
     while (1)
     {
-        if(RASPBERRY.readable() == 1) //EVALUA SI HAY ALGUNA ACCION POR REALIZAR SEGUN LO QUE LA RASPBERRY ENVIA
-        {
-            PC.printf("Hay algo para leer\r\n");
-            OPCION = RASPBERRY.getc();
-            switch (OPCION) //DEFINE CUÁL ACCION SE REQUIERE REALIZAR (QUE CAMBIO SE REALIZO EN UBIDOTS)
-            {
-                case 'A':
-                {
-                    FG_DIMMER = 1;
-                    PC.printf("A: CAMBIO DIMMER\r\n");
-                    break;
-                }
-                case 'B':
-                {
-                    FG_INTERRUPTOR_ON = 1;
-                    PC.printf("B: DIMMER EN ON\r\n");
-                    break;
-                }
-                case 'C':
-                {
-                    FG_INTERRUPTOR_OFF = 1;
-                    PC.printf("C: DIMMER EN OFF\r\n");
-                    break;
-                }
-                case 'D':
-                {
-                    FG_COMIDA = 1;
-                    PC.printf("D\r\n");
-                    break;
-                }
-                case 'E':
-                {
-                    FG_AGUA = 1;
-                    PC.printf("E\r\n");
-                    break;
-                }
-                case 'F':
-                {
-                    TOMA_ON = 1;
-                    PC.printf("F:\r\n");
-                    break;
-                }
-                case 'G':
-                {
-                    TOMA_OFF = 1;
-                    PC.printf("G:\r\n");
-                    break;
-                }
-                    
-            }    
-        }
-        //TOMAR ACCIONES
+        //-------------------------------------------------------------- EVALUAR SI EXISTEN ALERTAS POR ATENDER DESDE RASPBERRY ------------------------------------------------------
+
+        LEER_RASPBERRY ();
+        
+        //---------------------------------------------------------------------- ATENDER ALERTAS ENVIADAS POR RASPBERRY --------------------------------------------------------------
+
         if(FG_DIMMER == 1)              //OPTIMIZAR
         {
             PC.printf("FUNCION CAMBIAR DIMMER\r\n");
-            ENVIAR_CICLO();         //LE SOLICITA A LA RASPBERRY EL VALOR DEL DIMMER, Y LO ENVIA AL ESCLAVO CORRESPONDIENTE, ADEMAS DA ESPERA A UNA RESPUESTA DE QUE LA INFORMACION FUE RECIBIDA.
-            RASPBERRY.putc('R');
-            PC.printf("RESPONDIO CON UNA R \r\n");
+            ENVIAR_CICLO();                                 //LE SOLICITA A LA RASPBERRY EL VALOR DEL DIMMER, Y LO ENVIA AL ESCLAVO CORRESPONDIENTE
             FG_DIMMER = 0;    
         }
         if(FG_INTERRUPTOR_ON == 1)      //OPTIMIZAR
         {
             PC.printf("FUNCION ENCENDER INTERRUPTOR\r\n");
-            ENVIAR_CICLO();         //LE SOLICITA A LA RASPBERRY EL VALOR DEL DIMMER, Y LO ENVIA AL ESCLAVO CORRESPONDIENTE, ADEMAS DA ESPERA A UNA RESPUESTA DE QUE LA INFORMACION FUE RECIBIDA.         
-            RASPBERRY.putc('R');
-            PC.printf("RESPONDIO CON UNA R \r\n");
+            ENVIAR_CICLO();                                 //LE SOLICITA A LA RASPBERRY EL VALOR DEL DIMMER, Y LO ENVIA AL ESCLAVO CORRESPONDIENTE
             FG_INTERRUPTOR_ON = 0;
         }
         if(FG_INTERRUPTOR_OFF == 1)
         {
             PC.printf("FUNCION APAGAR INTERRUPTOR\r\n");
-            char RESP = 0;     //UBICAR 
-            while(RESP == 0)
-            {
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
-                RADIO.write(NRF24L01P_PIPE_P0, INTE_OFF, TAM_TX);
-                PC.printf("RADIO ENVIO MENSAJE \r\n");
-                RADIO.setRfFrequency (MI_FREQ);
-                RADIO.setReceiveMode();
-                wait_ms (RETARDO);
-                if(RADIO.readable())
-                {
-                    PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
-                    RECIBIR();
-                    if(RX_DATA[0] == 'O' && RX_DATA[1] == 'O' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
-                    {
-                        RESP = 1;
-                        RADIO.setRfFrequency (MI_FREQ);
-                        RADIO.setReceiveMode();
-                        RASPBERRY.putc('I');    //RESPONDER QUE SE RECIBIO LA ORDEN
-                        PC.printf("RESPONDIO CON UNA I \r\n");
-                    }    
-                }    
-            }
+            RASPBERRY.putc('I');                        //RESPONDER QUE SE RECIBIO LA ORDEN
+            PC.printf("RESPONDIO CON UNA I \r\n");
+            ERF_INTERRUP_OFF = 0;
+            ENVIAR_ALERTAS();
             FG_INTERRUPTOR_OFF = 0;
         }
         if(FG_COMIDA == 1)
         {
             PC.printf("FUNCION DISPENSAR COMIDA\r\n");
-            char RESP_1 = 0;     //UBICAR 
-            while(RESP_1 == 0)
-            {
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
-                RADIO.write(NRF24L01P_PIPE_P0, FOOD_ON, TAM_TX);
-                PC.printf("RADIO ENVIO MENSAJE \r\n");
-                RADIO.setRfFrequency (MI_FREQ);
-                RADIO.setReceiveMode();
-                wait_ms (RETARDO);
-                if(RADIO.readable())
-                {
-                    PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
-                    RECIBIR();
-                    if(RX_DATA[0] == 'D' && RX_DATA[1] == 'F' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
-                    {
-                        RESP_1 = 1;
-                        RADIO.setRfFrequency (MI_FREQ);
-                        RADIO.setReceiveMode();
-                        RASPBERRY.putc('G');    //RESPONDER QUE SE RECIBIO LA ORDEN
-                        PC.printf("RESPONDIO CON UNA G \r\n");
-                    }    
-                }    
-            }
+            RASPBERRY.putc('G');                        //RESPONDER QUE SE RECIBIO LA ORDEN
+            PC.printf("RESPONDIO CON UNA G \r\n");
+            ERF_COMIDA = 0;
+            ENVIAR_ALERTAS();
             FG_COMIDA = 0;
         }
         if(FG_AGUA == 1)
         {
             PC.printf("FUNCION DISPENSAR AGUA\r\n");
-            char RESP_2 = 0;     //UBICAR 
-            while(RESP_2 == 0)
-            {
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
-                RADIO.write(NRF24L01P_PIPE_P0, WATE_ON, TAM_TX);
-                PC.printf("RADIO ENVIO MENSAJE \r\n");
-                RADIO.setRfFrequency (MI_FREQ);
-                RADIO.setReceiveMode();
-                wait_ms (RETARDO);
-                if(RADIO.readable())
-                {
-                    PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
-                    RECIBIR();
-                    if(RX_DATA[0] == 'D' && RX_DATA[1] == 'A' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
-                    {
-                        RESP_2 = 1;
-                        RADIO.setRfFrequency (MI_FREQ);
-                        RADIO.setReceiveMode();
-                        RASPBERRY.putc('H');    //RESPONDER QUE SE RECIBIO LA ORDEN
-                        PC.printf("RESPONDIO CON UNA H \r\n");
-                    }    
-                }    
-            }
+            RASPBERRY.putc('H');                        //RESPONDER QUE SE RECIBIO LA ORDEN
+            PC.printf("RESPONDIO CON UNA H \r\n");
+            ERF_AGUA = 0;
+            ENVIAR_ALERTAS();
             FG_AGUA = 0;
         }
         if(TOMA_ON == 1)
         {
             PC.printf("FUNCION ENCENDER TOMA\r\n");
-            char RESP_3 = 0;     //UBICAR 
-            while(RESP_3 == 0)
-            {
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
-                RADIO.write(NRF24L01P_PIPE_P0, TOMA_SI, TAM_TX);
-                PC.printf("RADIO ENVIO MENSAJE \r\n");
-                RADIO.setRfFrequency (MI_FREQ);
-                RADIO.setReceiveMode();
-                wait_ms (RETARDO);
-                if(RADIO.readable())
-                {
-                    PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
-                    RECIBIR();
-                    if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
-                    {
-                        RESP_3 = 1;
-                        RADIO.setRfFrequency (MI_FREQ);
-                        RADIO.setReceiveMode();
-                        RASPBERRY.putc('F');    //RESPONDER QUE SE RECIBIO LA ORDEN
-                        PC.printf("RESPONDIO CON UNA F \r\n");
-                    }    
-                }    
-            }
+            RASPBERRY.putc('F');                        //RESPONDER QUE SE RECIBIO LA ORDEN
+            PC.printf("RESPONDIO CON UNA F \r\n");
+            ERF_TOMA_ON = 0;
+            ENVIAR_ALERTAS();
             TOMA_ON = 0;
         }    
         if(TOMA_OFF == 1)
         {
             PC.printf("FUNCION APAGAR TOMA\r\n");
-            char RESP_4 = 0;     //UBICAR 
-            while(RESP_4 == 0)
-            {
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
-                RADIO.write(NRF24L01P_PIPE_P0, TOMA_NO, TAM_TX);
-                PC.printf("RADIO ENVIO MENSAJE \r\n");
-                RADIO.setRfFrequency (MI_FREQ);
-                RADIO.setReceiveMode();
-                wait_ms (RETARDO);
-                if(RADIO.readable())
-                {
-                    PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
-                    RECIBIR();
-                    if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
-                    {
-                        RESP_4 = 1;
-                        RADIO.setRfFrequency (MI_FREQ);
-                        RADIO.setReceiveMode();
-                        RASPBERRY.putc('N');    //RESPONDER QUE SE RECIBIO LA ORDEN
-                        PC.printf("RESPONDIO CON UNA N \r\n");
-                    }    
-                }    
-            }
+            RASPBERRY.putc('N');                        //RESPONDER QUE SE RECIBIO LA ORDEN
+            PC.printf("RESPONDIO CON UNA N \r\n");
+            ERF_TOMA_OFF = 0;
+            ENVIAR_ALERTAS();
             TOMA_OFF = 0;
         } 
+
+        //---------------------------------------------------------------------- REVISAR SI EL RADIO RECIBIÓ ALERTAS --------------------------------------------------------------
+
         if(RADIO.readable())
         {           
             PC.printf("ALGO LLEGO\r\n");
-            RECIBIR();                    
+            RECIBIR();
+            //------------------------------------------------------------ ALERTAS ESPERADAS DESDE CAMARA, DIMMER Y SENSOR DE CORRIENTE ------------------------------------------------
             if(RX_DATA[0] == 'S' && RX_DATA[1] == 'P' && RX_DATA[2] == 'A' && RX_DATA[3] == 'D')
             {
                 PC.printf("LA PUERTA SE ABRIO\r\n"); 
                 RASPBERRY.putc('P');  
-                                                         
-                for (int i = 0; i<4;i++)        // LIMPIA  BASURA POR SI QUEDO DE LA ANTERIOR ALERTA 
-                {
-                    DATA_TX[i] = ' ';
-                } 
-                
-                DATA_TX [0] = 'S';
-                DATA_TX [1] = 'G';
-                DATA_TX [2] = 'Y';
-                DATA_TX [3] = 'E';
-                
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_PUERTA, TAM_DIRECCIONES, RF_PUERTA);
-                wait_ms(250);
-                RADIO.write(NRF24L01P_PIPE_P0, DATA_TX, TAM_TX);
-                PC.printf("SE LE RESPONDIO QUE LA ALERTA SE RECIBIO \r\n"); 
-                RADIO.setRfFrequency(MI_FREQ);
-                RADIO.setReceiveMode(); 
-                
-                CONFIRMA_GV = RASPBERRY.getc();                            
-                if (CONFIRMA_GV == 'T') // CONFIRMA RESPUESTA DE RBP
-                {
-                    PC.printf("SE COMPLETO LA GRABACION Y EL ENVIO \r\n");                                                                        
-                }                                                           
+                CRF_CAMARA = 0;
+                ENVIAR_ALERTAS();
             }
                    
             if(RX_DATA [3] == 'C')
             {
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
-                wait_ms(250);
-                RADIO.write(NRF24L01P_PIPE_P0, CONF_CIC, TAM_TX);
-                PC.printf("SE RESPONDIO \r\n");
-                for(int i = 0; i<TAM_TX; i++)
-                {
-                    PC.printf("%c",CONF_CIC[i]);
-                }
-                PC.printf("\r\n");
-                RADIO.setRfFrequency(MI_FREQ);
-                RADIO.setReceiveMode();
-                
+                CRF_DIMMER = 0;
+                ENVIAR_ALERTAS();
+
                 CENTENAS = (RX_DATA [0] - 48) * 100;
                 DECENAS = (RX_DATA [1] - 48) * 10;
                 UNIDADES = (RX_DATA [2] - 48);
@@ -373,49 +220,17 @@ int main (void)
                 PC.printf("%d %d %d %d \r\n",CENTENAS,DECENAS,UNIDADES, PORCENTAJE);
                  
                 RASPBERRY.putc('C');
-                char E_CICLO = 0;
+                E_CICLO = 0;
                 while (E_CICLO == 0)
                 {
-                    if(RASPBERRY.readable() == 1)
-                    {
-                        LETRA = RASPBERRY.getc();
-                        if(LETRA == 'C')
-                        {
-                            RASPBERRY.printf("%d",PORCENTAJE);
-                            PC.printf("%d",PORCENTAJE);
-                            E_CICLO = 1;
-                            char CONFIRMAR = 0;
-                            while (CONFIRMAR == 0)
-                            {
-                                if(RASPBERRY.readable() == 1)
-                                {
-                                    LETRA = RASPBERRY.getc();
-                                    if(LETRA == 'c')
-                                    {
-                                        CONFIRMAR = 1;
-                                    }
-                                }
-                            }
-                        }
-                        
-                    }
+                    LEER_RASPBERRY();
                 }
             }
             if(RX_DATA [3] == 'Z')
             {
-                RADIO.setTransmitMode();
-                PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
-                wait_ms(250);
-                RADIO.write(NRF24L01P_PIPE_P0, CONF_COR, TAM_TX);
-                PC.printf("SE RESPONDIO \r\n");
-                for(int i = 0; i<TAM_TX; i++)
-                {
-                    PC.printf("%c",CONF_COR[i]);
-                }
-                PC.printf("\r\n");
-                RADIO.setRfFrequency(MI_FREQ);
-                RADIO.setReceiveMode();
- 
+                CRF_CORRIENTE = 0;
+                ENVIAR_ALERTAS();
+
                 DECIMAL  = (RX_DATA [0] - 48) * 100;
                 UNIDAD_1 = (RX_DATA [1] - 48) *10;
                 UNIDAD_2 = (RX_DATA [2] - 48);  
@@ -424,34 +239,50 @@ int main (void)
                               
                 PC.printf("%f \r\n",VALOR_COR);                                  
                 RASPBERRY.putc('Z');
-
-                char E_COR = 0;                                                      
+   
+                E_COR = 0;                                                  
                 while (E_COR == 0)
                 {
-                    if(RASPBERRY.readable() == 1)
-                    {
-                        LETRA = RASPBERRY.getc();
-                        if(LETRA == 'Z')
-                        {
-                            RASPBERRY.printf("%f",VALOR_COR);
-                            E_COR = 1;
-                            char CONFIRMAR = 0;
-                            while (CONFIRMAR == 0)
-                            {
-                                if(RASPBERRY.readable() == 1)
-                                {
-                                    LETRA = RASPBERRY.getc();
-                                    if(LETRA == 'z')
-                                    {
-                                        CONFIRMAR = 1;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    LEER_RASPBERRY();
                 }
             }
-        }     
+            //------------------------------------------------------------ CONFIRMACIONES DE RECEPCION DE ALERTAS ------------------------------------------------
+
+            if(RX_DATA[0] == 'U' && RX_DATA[1] == 'U' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
+            {
+                ERF_CICLO = 1;
+            }
+
+            if(RX_DATA[0] == 'O' && RX_DATA[1] == 'O' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
+            {
+                ERF_INTERRUP_OFF = 1;
+            }    
+
+            if(RX_DATA[0] == 'D' && RX_DATA[1] == 'F' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
+            {
+                ERF_COMIDA = 1;
+            }    
+
+            if(RX_DATA[0] == 'D' && RX_DATA[1] == 'A' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
+            {
+                ERF_AGUA = 1;
+            }    
+
+            if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
+            {
+                ERF_TOMA_ON = 1;
+            }    
+
+            if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
+            {
+                ERF_TOMA_OFF = 1;
+            }    
+
+        }
+
+        //--------------------------- ENVIAR ALERTAS SI HAY CONFIRMACIONES PENDIENTES O SE RECIBIÓ NUEVAMENTE ALERTAS DESDE CAMARA, SENSOR O DIMMER ---------------------------
+
+        ENVIAR_ALERTAS ();     
     }
 }
 
@@ -480,10 +311,11 @@ void RECIBIR (void)
 }
 void ENVIAR_CICLO (void)
 {
-    RASPBERRY.putc('U');    //RESPONDER QUE SE ESTA LISTO PARA RECIBIR EL ARREGLO
+    char ESPERANDO = 1;     
+    char POS = 0;           
+    
+    RASPBERRY.putc('U');                        //RESPONDER QUE SE ESTA LISTO PARA RECIBIR EL ARREGLO
     PC.printf("RESPONDIO CON UNA U \r\n");
-    char ESPERANDO = 1;     //UBICAR
-    char POS = 0;           //UBICAR
     while(ESPERANDO == 1)
     {
         if(RASPBERRY.readable() == 1)
@@ -495,9 +327,121 @@ void ENVIAR_CICLO (void)
         {
             POS = ESPERANDO = 0;
         }        
-    }  
-    char RESPUESTA = 0;     //UBICAR 
-    while(RESPUESTA == 0)
+    }
+    RASPBERRY.putc('R');
+    PC.printf("RESPONDIO CON UNA R \r\n");  
+
+    ERF_CICLO = 0;
+    ENVIAR_ALERTAS();
+}
+
+void LEER_RASPBERRY (void)
+{
+    char CONFIRMAR_1 = 1;
+    char CONFIRMAR_2 = 1;
+
+    if(RASPBERRY.readable() == 1)               //EVALUA SI HAY ALGUNA ACCION POR REALIZAR SEGUN LO QUE LA RASPBERRY ENVIA
+    {
+        PC.printf("Hay algo para leer\r\n");
+        OPCION = RASPBERRY.getc();
+        switch (OPCION)                         //DEFINE CUÁL ACCION SE REQUIERE REALIZAR
+        {
+            case 'A':
+            {
+                FG_DIMMER = 1;
+                PC.printf("A: CAMBIO DIMMER\r\n");
+                break;
+            }
+            case 'B':
+            {
+                FG_INTERRUPTOR_ON = 1;
+                PC.printf("B: DIMMER EN ON\r\n");
+                break;
+            }
+            case 'I':
+            {
+                FG_INTERRUPTOR_OFF = 1;
+                PC.printf("I: DIMMER EN OFF\r\n");
+                break;
+            }
+            case 'D':
+            {
+                FG_COMIDA = 1;
+                PC.printf("D\r\n");
+                break;
+            }
+            case 'E':
+            {
+                FG_AGUA = 1;
+                PC.printf("E\r\n");
+                break;
+            }
+            case 'F':
+            {
+                TOMA_ON = 1;
+                PC.printf("F:\r\n");
+                break;
+            }
+            case 'G':
+            {
+                TOMA_OFF = 1;
+                PC.printf("G:\r\n");
+                break;
+            }
+            //------------------------------------------------------------------RESPUESTAS A ALERTAS GENERADAS DESDE EL MICRO------------------------------------------------
+            case 'C':
+            {
+                RASPBERRY.printf("%d",PORCENTAJE);
+                PC.printf("%d",PORCENTAJE);
+                CONFIRMAR_1 = 0;
+                while (CONFIRMAR_1 == 0)
+                {
+                    if(RASPBERRY.readable() == 1)
+                    {
+                        LETRA = RASPBERRY.getc();
+                        if(LETRA == 'c')
+                        {
+                            CONFIRMAR_1 = 1;
+                            E_CICLO = 1;
+                        }
+                    }
+                }
+                break;
+            }
+
+            case 'Z':
+            {
+                RASPBERRY.printf("%f",VALOR_COR);
+                CONFIRMAR_2 = 0;
+                while (CONFIRMAR_2 == 0)
+                {
+                    if(RASPBERRY.readable() == 1)
+                    {
+                        LETRA = RASPBERRY.getc();
+                        if(LETRA == 'z')
+                        {
+                            CONFIRMAR_2 = 1;
+                            E_COR = 1;
+                        }
+                    }
+                }
+                break;
+            }
+
+            case 'T':
+            {
+                E_CAMARA = 1;
+                break;
+            }
+                
+        }    
+    }
+}
+
+void ENVIAR_ALERTAS (void)
+{
+    //--------------------------------------------------------------------ENVIAR CICLO ÚTIL AL DIMMER------------------------------------------------------------
+    if (ERF_CICLO == 0)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
@@ -512,10 +456,163 @@ void ENVIAR_CICLO (void)
             RECIBIR();
             if(RX_DATA[0] == 'U' && RX_DATA[1] == 'U' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
             {
-                RESPUESTA = 1;
+                ERF_CICLO = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
             }
         }
+    }
+    if(ERF_INTERRUP_OFF == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
+        RADIO.write(NRF24L01P_PIPE_P0, INTE_OFF, TAM_TX);
+        PC.printf("RADIO ENVIO MENSAJE \r\n");
+        RADIO.setRfFrequency (MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms (RETARDO);
+        if(RADIO.readable())
+        {
+            PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+            RECIBIR();
+            if(RX_DATA[0] == 'O' && RX_DATA[1] == 'O' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
+            {
+                ERF_INTERRUP_OFF = 1;
+                RADIO.setRfFrequency (MI_FREQ);
+                RADIO.setReceiveMode();
+            }    
+        }
+    }
+    if(ERF_COMIDA == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
+        RADIO.write(NRF24L01P_PIPE_P0, FOOD_ON, TAM_TX);
+        PC.printf("RADIO ENVIO MENSAJE \r\n");
+        RADIO.setRfFrequency (MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms (RETARDO);
+        if(RADIO.readable())
+        {
+            PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+            RECIBIR();
+            if(RX_DATA[0] == 'D' && RX_DATA[1] == 'F' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
+            {
+                ERF_COMIDA = 1;
+                RADIO.setRfFrequency (MI_FREQ);
+                RADIO.setReceiveMode();
+            }    
+        }    
+    }
+    if(ERF_AGUA == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
+        RADIO.write(NRF24L01P_PIPE_P0, WATE_ON, TAM_TX);
+        PC.printf("RADIO ENVIO MENSAJE \r\n");
+        RADIO.setRfFrequency (MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms (RETARDO);
+        if(RADIO.readable())
+        {
+            PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+            RECIBIR();
+            if(RX_DATA[0] == 'D' && RX_DATA[1] == 'A' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
+            {
+                ERF_AGUA = 1;
+                RADIO.setRfFrequency (MI_FREQ);
+                RADIO.setReceiveMode();
+            }    
+        }    
+    }
+    if (ERF_TOMA_ON == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
+        RADIO.write(NRF24L01P_PIPE_P0, TOMA_SI, TAM_TX);
+        PC.printf("RADIO ENVIO MENSAJE \r\n");
+        RADIO.setRfFrequency (MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms (RETARDO);
+        if(RADIO.readable())
+        {
+            PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+            RECIBIR();
+            if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
+            {
+                ERF_TOMA_ON = 1;
+                RADIO.setRfFrequency (MI_FREQ);
+                RADIO.setReceiveMode();
+            }    
+        }    
+    }
+    if(ERF_TOMA_OFF == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
+        RADIO.write(NRF24L01P_PIPE_P0, TOMA_NO, TAM_TX);
+        PC.printf("RADIO ENVIO MENSAJE \r\n");
+        RADIO.setRfFrequency (MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms (RETARDO);
+        if(RADIO.readable())
+        {
+            PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+            RECIBIR();
+            if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
+            {
+                ERF_TOMA_OFF = 1;
+                RADIO.setRfFrequency (MI_FREQ);
+                RADIO.setReceiveMode();
+            }    
+        }    
+    }
+    if(CRF_CAMARA == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_PUERTA, TAM_DIRECCIONES, RF_PUERTA);
+        RADIO.write(NRF24L01P_PIPE_P0, CAMARA_OK, TAM_TX);
+        PC.printf("SE LE RESPONDIO QUE LA ALERTA SE RECIBIO \r\n"); 
+        RADIO.setRfFrequency(MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms(250);                                                      
+        E_CAMARA = 0;
+        while (E_CAMARA == 0)
+        {
+            LEER_RASPBERRY();
+        }
+        CRF_CAMARA = 1;
+    }
+    if(CRF_DIMMER == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
+        RADIO.write(NRF24L01P_PIPE_P0, CONF_CIC, TAM_TX);
+        PC.printf("SE RESPONDIO \r\n");
+        RADIO.setRfFrequency(MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms(250);
+        for(int i = 0; i<TAM_TX; i++)
+        {
+            PC.printf("%c",CONF_CIC[i]);
+        }
+        PC.printf("\r\n");
+        CRF_DIMMER = 1;
+    }
+    if(CRF_CORRIENTE == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
+        RADIO.write(NRF24L01P_PIPE_P0, CONF_COR, TAM_TX);
+        PC.printf("SE RESPONDIO \r\n");
+        RADIO.setRfFrequency(MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms(250);
+        for(int i = 0; i<TAM_TX; i++)
+        {
+            PC.printf("%c",CONF_COR[i]);
+        }
+        PC.printf("\r\n");
+        CRF_CORRIENTE = 1;
     }
 }

@@ -5,6 +5,7 @@
 #include "nRF24L01P.h"
 
 #define RETARDO       2000
+#define REPETIR_ENVIO 20
 
 #define MI_FREQ_MST 2400
 #define DIR_MAESTRO 0x000002   //DIRECCION DE RECEPCION DEL MAESTRO
@@ -221,6 +222,8 @@ void DESACTIVAR (void)
 }
 void ENVIARC (void)
 {
+    int INTENTOS = 0;
+    
     TX_DATA [0] = ((CENTENAS / 100) + 48);
     TX_DATA [1] = ((DECENAS / 10) + 48);
     TX_DATA [2] = UNIDADES + 48;
@@ -246,6 +249,16 @@ void ENVIARC (void)
                 RADIO.setRfFrequency (RF_DIMMER);
                 RADIO.setReceiveMode();
             }
+        }
+        
+        INTENTOS = INTENTOS + 1;
+        
+        if (INTENTOS >= REPETIR_ENVIO)
+        {
+            RESP = 1;
+            RADIO.setRfFrequency (RF_DIMMER);
+            RADIO.setReceiveMode();
+            INTENTOS = 0;
         }
     }
 }
