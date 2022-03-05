@@ -1,4 +1,4 @@
-# Diseño Módulo Control Cámara
+# Diseño Módulo de Monitoreo de Puerta
 
 El sistema de monitoreo está encargado de detectar la apertura de la puerta mediante un interruptor magnético normalmente cerrado y enviar una alerta al controlador maestro para que la SBC se encargue de tomar un breve video desde la cámara IP para posteriormente enviarlo al correo electrónico del usuario. Para realizar la comunicación entre la Raspberry Pi y la cámara IP, y además capturar el video, es necesario instalar una serie de librerías descritas a continuación: 
 
@@ -27,7 +27,6 @@ pip3 install opencv-contrib-python==4.1.0.25
 
 ```Shell
 python3
-
 ```
 
 ```Shell
@@ -78,7 +77,7 @@ Además, debe proporcionarse un correo electrónico con su respectiva contraseñ
 
 Una vez finalizado el proceso de captura de video, el video será almacenado en una ruta especifica y enviado al correo electrónico, dicho video será sobrescrito con cada nueva alerta. 
 
-## Diagrama de Flujo Código en Python
+## Diagrama de Flujo Código en Python Para Captura y Envío de Video (SBC)
 
 ![DIAGRAMA PYTHON](Imagenes/DIAGRAMA_PYTHON.png)
 
@@ -189,7 +188,7 @@ if __name__ == '__main__':
 
 ```
 
-## Hardware módulo Control Cámara
+## Hardware Módulo de Monitoreo de Puerta
 
 ![ALIMENTACIÓN](Imagenes/ALIMENTACION.png)
 
@@ -203,7 +202,7 @@ La anterior figura muestra un circuito resistivo tipo pull up con antirrebote, y
 
 ![CONTROL](Imagenes/CONTROL.png)
 
-## Código Módulo de Control Cámara
+## Código Módulo de Monitoreo de Puerta en C (Microcontrolador)
 ```c
 //CODIGO ESCLACO CONTROL PUERTA Y CAMARA
 //EN RADIOS nRF24L01                                                         

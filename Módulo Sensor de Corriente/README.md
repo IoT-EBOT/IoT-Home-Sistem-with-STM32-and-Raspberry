@@ -13,6 +13,7 @@ En la anterior figura se puede observar el circuito para el tratamiento de la se
 La caída de tensión en la resistencia variable ingresa a un amplificador diferencial cuya función es acoplar la señal al sistema, adicionar un voltaje 	de offset (1.65V) y actuar como filtro para la señal. Posteriormente la señal pasa por un amplificador seguidor que a la salida incluye un filtro pasa bajos RC con frecuencia de corte en 159 Hz.
 
 
+
 La señal de salida (SIGNAL) es ingresada al ADC del microcontrolador y 	representa la corriente sensada por el sistema.
 
 
