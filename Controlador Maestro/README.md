@@ -310,7 +310,7 @@ if name == 'main':
         print("el bucle está operando")
 ```
 
-# FALTA ADJUNTAR DIAGRAMA DE FLUJO PYTHON
+![DIAGRAMA DE FLUJO MAESTRO PYTHON](Imagenes/D_F_PYTHON.png)
 
 ## Código Microcontroaldor Maestro
 
@@ -935,4 +935,4 @@ void ENVIAR_ALERTAS (void)
 }
 ```
 
-# FALTA ADJUNTAR DIAGRAMA DE FLUJO C
+![DIAGRAMA DE FLUJO MAESTRO C](Imagenes/D_F_C.png)
