@@ -421,15 +421,15 @@ void OFF_DIMM (void)
 ```
 
 ## Diagrama de Flujo General Módulo Dimmer
-![Detector de Cruce por Cero](imagenes/DIAGRAMA_GENERAL.png)
+![Detector de Cruce por Cero](Imagenes/DIAGRAMA_GENERAL.png)
 
 ## Diagramas de Flujo Interrupciones Módulo Dimmer
 
-![Detector de Cruce por Cero](imagenes/INTERRUPCION_1.png)
+![Detector de Cruce por Cero](Imagenes/INTERRUPCION_1.png)
 
-![Detector de Cruce por Cero](imagenes/INTERRUPCION_2.png)
+![Detector de Cruce por Cero](Imagenes/INTERRUPCION_2.png)
 
-![Detector de Cruce por Cero](imagenes/INTERRUPCION_3.png)
+![Detector de Cruce por Cero](Imagenes/INTERRUPCION_3.png)
 
-![Detector de Cruce por Cero](imagenes/INTERRUPCION_4.png)
+![Detector de Cruce por Cero](Imagenes/INTERRUPCION_4.png)
 
