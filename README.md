@@ -31,7 +31,7 @@ El sistema es capaz de detectar las órdenes fijadas por el usuario en la nube y
 
     ![BLUE_PILL](Imagenes/BLUE_PILL.jpg)
 
-- El intercambio de información entre los diferentes módulos de control y un único controlador maestro se realizó implementando comunicación RF en la banda ISM mediante los radios de comunicación nRF24L01 con antena integrada.
+- El intercambio de información entre los diferentes módulos de control y un único controlador maestro se realizó implementando comunicación RF en la banda ISM mediante los radios de comunicación nRF24L01 con antena integrada. La librería usada en Mbed para integrar el radio con la Blue Pill fue [nRF24L01](https://os.mbed.com/components/nRF24L01/)
 
     ![NRF24L01](Imagenes/NRF24L01.jpg)
 
