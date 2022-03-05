@@ -17,15 +17,17 @@ El sistema es capaz de detectar las órdenes fijadas por el usuario en la nube y
 
 ![Esquema General del Controlador Maestro y Modulos de Control](Imagenes/ESQUEMA_MAESTRO_MODULOS.png)
 
-- El dashboard en la nube utilizado para la presente solución fue Ubidots en su versión gratuita.
+## Generalidades del Sistema
+
+- El dashboard en la nube utilizado para la presente solución fue [Ubidots](https://ubidots.com/) en su versión gratuita.
 
     ![DASHBOARD_FINAL](Imagenes/DASHBOARD.png)
 
-- La SBC que enlaza las ordenes enviadas por el usuario en la nube con el sistema es la Raspberry Pi 4 de 2GB de RAM, a la cual se le instaló el sistema operativa Raspbian.
+- La SBC que enlaza las ordenes enviadas por el usuario en la nube con el sistema es la Raspberry Pi 4 de 2GB de RAM, a la cual se le instaló el sistema operativo [Raspbian](https://www.raspberrypi.com/software/).
 
     ![RASPBERRY_PI_4](Imagenes/RASPBERRY_PI_4.jpg)
 
-- La tarjeta de desarrollo implementada en esta solución es la Blue Pill que incorpora un STM32F103C8, una CPU Cortex-M3 de 32-bits.
+- La tarjeta de desarrollo implementada en esta solución es la Blue Pill que incorpora un STM32F103C8, una CPU Cortex-M3 de 32-bits. La programación de dicha tarjeta se realizó mediante [Mbed Online Compiler](https://os.mbed.com/).
 
     ![BLUE_PILL](Imagenes/BLUE_PILL.jpg)
 
