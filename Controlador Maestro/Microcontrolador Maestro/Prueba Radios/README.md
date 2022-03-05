@@ -1,4 +1,13 @@
 # Pruebas de comunicación Radios NRF24L01
+
+El radio NRF24L01 está diseñado para trabajar en la banda de frecuencia ISM de 2,4GHz, adicionalmente, el fabricante indica que tiene 126 canales de frecuencia seleccionables, lo que se traduce en un rango de trabajo entre 2,4GHz y 2,515GHz. Tiene una potencia de transmisión de datos de 0,-6,-12 o -18dBm y una tasa de trasferencia de 250kbps, 1Mbps o 2Mbps.
+
+Para integrar el radio NRF24L01 y el microcontrolador, es necesario utilizar una librería  desarrollada por un miembro de la comunidad Mbed para dicho dispositivo y microcontrolador. Esta librería proporciona una serie de funciones facilitan la configuración y manipulación de los radios por parte del STM32.
+
+Se realizó una prueba con un maestro transmisor y un esclavo receptor, donde el maestro envía repetidamente un mensaje a la dirección y frecuencia a las que se encuentra configurado el esclavo. Se espera que este último al recibir el mensaje lo envíe mediante el puerto serial del microcontrolador a un PC. El transmisor se ubicó en diferentes habitaciones del hogar, mientras que el receptor se posicionó en un segundo piso (punto medio a nivel del escenario usado) para que, al recibir el mensaje, este sea impreso en un terminal (Putty).
+
+![Diagramas de flujo simplificados](Imagenes/DIAGRAMAS_SIMPLIFICADOS.png)
+
 ## 1. Transmisión de Datos
 Se estima que el tamaño máximo para el arreglo de información que se enviará desde el microcontrolador maestro que se comunicará con la Raspberry pi será de 4 bytes (que es el mismo tamaño de información que se configuró en los distintos radios de comunicación para cada módulo de control), por lo cual se configuró la tasa de transferencia de 250kbps y una potencia de transmisión de 0dBm para lograr el mayor alcance posible.
 

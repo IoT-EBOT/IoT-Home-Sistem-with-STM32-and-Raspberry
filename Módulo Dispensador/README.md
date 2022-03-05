@@ -204,6 +204,6 @@ void APAGAR_AGUA (void)
 ## Diagrama de Flujo General Módulo Dispensador
 ![Diagrama General](Imagenes/DIAGRAMA_GENERAL.png)
 
-## Diagramas de Flujo Interrupciones Módulo Ddispensador
+## Diagramas de Flujo Interrupciones Módulo Dispensador
 
 ![Diagrama Interrupciones](Imagenes/INTERRUPCION_1.png)

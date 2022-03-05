@@ -1,4 +1,7 @@
 # Pruebas de Enlace Entre Ubidots y Raspberry Pi
+
+Ubidots provee un tutorial para la descarga de la librería REQUEST  para la comunicación HTTP, clase necesaria para la comunicación con páginas web. Adicionalmente proporciona un código ejemplo en Python que permite generar valores aleatorios para posteriormente modificarlos en la plataforma, y otro código para salvar datos alojados en la nube y llevarlos a nuestro programa Python. En este caso se utilizaron ambos códigos de ejemplo y se realizaron ligeros cambios en los mismos para que las funciones propuestas en el tutorial permitan la modificación y la lectura de una variable a la vez, esto con el fin de tener un mayor control del flujo del programa y optimizar en algunos casos el envío de información.
+
 ## 1. ENVÍO DE INFORMACIÓN:
 Este código es utilizado para enlazar la plataforma Ubidots con el dispositivo usado (Raspberry pi) para esto es necesario usar el Token y dispositivo específico que se puede visualizar en la cuenta de usuario en Ubidots. De igual manera, se relacionan variables en la nube con variables locales del Python. 
 

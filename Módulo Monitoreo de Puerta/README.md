@@ -77,10 +77,6 @@ Además, debe proporcionarse un correo electrónico con su respectiva contraseñ
 
 Una vez finalizado el proceso de captura de video, el video será almacenado en una ruta especifica y enviado al correo electrónico, dicho video será sobrescrito con cada nueva alerta. 
 
-## Diagrama de Flujo Código en Python Para Captura y Envío de Video (SBC)
-
-![DIAGRAMA PYTHON](Imagenes/DIAGRAMA_PYTHON.png)
-
 ## Código Control Cámara Raspberry
 ```python
 import cv2
@@ -183,10 +179,11 @@ if __name__ == '__main__':
     ENVIO_CORREO()
     print("SE CERRO PROGRAMA DE GRABACION") 
     exit(1)
-    
-
-
 ```
+
+## Diagrama de Flujo Código en Python Para Captura y Envío de Video (SBC)
+
+![DIAGRAMA PYTHON](Imagenes/DIAGRAMA_PYTHON.png)
 
 ## Hardware Módulo de Monitoreo de Puerta
 
@@ -370,4 +367,4 @@ void ENVIAR_A(void)
 }
 ```
 
-# FALTA ADJUNTAR DIAGRAMA DE FLUJO
+![DIAGRAMA_MICRO](Imagenes/DIAGRAMA_MICRO.png)

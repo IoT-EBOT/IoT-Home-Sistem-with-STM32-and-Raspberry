@@ -1,4 +1,7 @@
 # Procedimiento para Habilitar Puerto Serie Raspberry Pi Para Uso en Archivos .py
+
+Raspbian por defecto configura el puerto serie Lite para conexión con la consola del sistema sin la necesidad de estar conectado a internet (headless), sin embargo, el puerto serial Lite tiene perdida de tramas de información por oscilaciones en la frecuencia del reloj, algo que no se puede permitir al utilizar el puerto serial para la comunicación con el microcontrolador del controlador maestro. Por lo tanto, se hace necesario realizar una serie de ajustes para habilitar el puerto serie, eliminar la interacción como consola, y modificar la prioridad del puerto para que este sea usado como principal con las ventajas que esto confiere, y finalmente, permita acceder al mismo por medio de un programa diseñado en Python.
+
 ## 1. Habilitar puerto TTL:
 Se debe garantizar que los periféricos de la Raspberry estén configurados de la siguiente manera:  
  

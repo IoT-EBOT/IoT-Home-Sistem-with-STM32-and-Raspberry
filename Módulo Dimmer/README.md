@@ -6,15 +6,14 @@ Para controlar el ángulo de disparo para cada semiciclo de la señal sinusoidal
 
 La anterior figura describe el circuito de cruce por cero desarrollado, el cual está encargado de generar una señal cuadrada a la salida (SIGNALZCD), donde los flancos de subida y de baja coinciden con el punto exacto donde la señal de la red doméstica toma un valor de 0V.
 
-
 En la entrada (Fin-Nin) es conectada la señal alterna de la red, esta pasa por una etapa de atenuación (R1-R2) y además cuenta con dos capacitores (C1-C2) que proporcionan aislamiento galvánico. La señal atenuada ingresa a un amplificador diferencial cuya función es acoplar la señal de la red al sistema, adicionar un voltaje de Offset a la señal (1.65V), y, además, por su funcionamiento natural actúa como filtro.
 
-
-La señal filtrada y montada sobre un nivel DC es llevada a un amplificador operacional configurado como comparador con histéresis. El voltaje de referencia o comparación será el mismo voltaje de Offset adicionado a la señal en la etapa anterior, pues este nivel DC coincide con los instantes de tiempo donde la señal alterna cruza por cero. 
-
+La señal filtrada y sumada con un nivel DC es llevada a un amplificador operacional configurado como comparador con histéresis. El voltaje de referencia o comparación será el mismo voltaje de Offset adicionado a la señal en la etapa anterior, pues este nivel DC coincide con los instantes de tiempo donde la señal alterna cruza por cero. 
 
 La salida del comparador no puede ser conectada directamente al microcontrolador, pues el voltaje de alimentación del TL084 es de 5V DC y su voltaje de saturación tiende a acercarse a dicho valor, mientras que el STM32 soporta voltajes de hasta 3.3V en sus terminales de entrada. Esto nos lleva a conectar un transistor a la salida del comparador, con el fin de obtener la señal de salida (señal cuadrada de cruce por cero - SIGNALZCD) con valores de 3.3V para un valor ALTO y así evitar daños en el microcontrolador.
+
 Una vez tratada la señal de la red doméstica para detectar el cruce por cero, el control de ángulo de disparo es determinado por el microcontrolador según el porcentaje definido por el usuario desde Ubidots, pues dicho porcentaje será el entregado a la carga tanto en el semiciclo positivo, como en el negativo.
+
 
 ![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
@@ -41,7 +40,9 @@ if (CICLO_R == 1)
 }
 ```
 
-Primero, se descompone el vector de información recibido por RF desde el maestro para identificar el valor porcentual definido por el usuario. Posteriormente, dicho valor porcentual se multiplica por 83.33 y es almacenado en una variable denominada T_ALTO, pues si el porcentaje fuera igual a 100, el tiempo en alto (tiempo que debe estar activo el TRIAC) de la señal debería ser de 8333uS (tiempo de oscilación de semiciclo positivo y negativo). En otras palabras, el tiempo el alto de la señal corresponde a un valor porcentual definido por el usuario, y el tiempo en bajo (tiempo en el que el TRIAC debe estar inactivo) será igual al tiempo de oscilación menos el tiempo en alto calculado.
+Primero, se descompone el vector de información recibida por RF desde el maestro para identificar el valor porcentual definido por el usuario. Posteriormente, dicho valor porcentual se multiplica por 83.33 y es almacenado en una variable denominada T_ALTO, pues si el porcentaje fuera igual a 100, el tiempo en alto (tiempo que debe estar activo el TRIAC) de la señal debería ser de 8333uS (tiempo de oscilación de semiciclo positivo y negativo). En otras palabras, el tiempo el alto de la señal corresponde a un valor porcentual definido por el usuario, y el tiempo en bajo (tiempo en el que el TRIAC debe estar inactivo) será igual al tiempo de oscilación menos el tiempo en alto calculado.
+
+Es importante resaltar que desde Ubidots se cuenta con 101 pasos para la selección del porcentaje de potencia entregada a la carga (valores de 0 a 100), mientras que la configuración del ciclo útil mediante los botones capacitivos permite únicamente 11 pasos (aumenta o disminuye en 10% la potencia entregada a la carga).
 
 ## Bloque de Código para Evitar Desbordes en los Valores del Ciclo Útil
 ```c
@@ -65,9 +66,7 @@ void FLANCOS (void)
 
 Posteriormente, el microcontrolador detecta cada flanco (tanto subida como bajada) de la señal de cruce por cero mediante una interrupción. Si el porcentaje de luminosidad determinado por el usuario es igual a 0, entonces se asegura que la señal de disparo del TRIAC se mantenga siempre en bajo, mientras que cuando dicho valor es igual a 100, se asegura que la etapa de potencia esté activa todo el tiempo. Cuando el valor del dimmer proporcionado por el usuario es diferente a 0 y 100, entonces, el microcontrolador asegura un valor lógico de 0 en la señal de disparo, y sólo activará la etapa de potencia una vez pasado el tiempo en bajo (T_BAJO) calculado. 
 
-
 Como resultado, la señal de DISPARO es una señal cuadrada, de 120 Hz, alineada a la derecha, y cuyo ciclo útil corresponde al definido por el usuario.
-
 
 La etapa de potencia está compuesta por un optoacoplador con salida de TRIAC sin circuito de detección de cruce por cero (para un control arbitrario del TRIAC), un BT138 para cargas de máximo 12A.Al TRIAC de potencia se le adicionó una red Snubber para evitar falsos disparos en el gatillo y se provee la inclusión de otra red Snubber para cargas inductivas (R14 - C6).
 

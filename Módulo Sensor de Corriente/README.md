@@ -348,5 +348,3 @@ void ENVIARC (void)
 ## Diagramas de Flujo Interrupciones Módulo Sensor de Corriente
 
 ![Detector de Cruce por Cero](Imagenes/INTERRUPCION_1.png)
-
-# SE DEBE ACTUALIZAR LOS DIAGRAMAS DE FLUJO
