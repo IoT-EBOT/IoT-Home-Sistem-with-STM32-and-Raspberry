@@ -2,7 +2,7 @@
 
 Si bien la SBC tiene la capacidad de enviar y recibir información desde Ubidots, es necesario implementar un radio NRF24L01 a este dispositivo, pues dicho radio es el medio de comunicación de la presente solución. La Raspberry pi cuenta con una interfaz de comunicación SPI, por lo que la conexión con el radio podría ser directa, sin embargo, para facilitar el desarrollo del controlador maestro se decide habilitar el puerto serie de la Raspberry pi para comunicación Serial comandada por un programa Python (revisar [Habilitar Puerto Serie Raspberryt Pi](https://github.com/IoT-EBOT/IoT-Home-Sistem-with-STM32-and-Raspberry/tree/main/Controlador%20Maestro/Raspberry%20Pi/Configuracion%20Puerto%20Serie%20Raspberry%20Pi)), y así tener un microcontrolador encargado de enviar y recibir la información del sistema mediante el radio, y la SBC opera como puente entre el sistema e Internet.
 
-![ESQUEMÁTICO](Imagenes/ESQUEMATICO.png)
+![ESQUEMÁTICO](Imagenes/ESQUEMATICO.pnG)
 
 Por lo tanto, el módulo del maestro transceptor cuenta con un conector GPIO macho de 40 pines (J1) que permite la comunicación serial entre la Raspberry pi y el microcontrolador, y, además, proporciona la alimentación necesaria para los componentes de la PCB (microcontrolador y radio). Se adicionó un led que permite reconocer si el programa se está ejecutando en la Raspberry Pi.
 
