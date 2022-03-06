@@ -4,6 +4,7 @@ Si bien la SBC tiene la capacidad de enviar y recibir información desde Ubidots
 
 ![ESQUEMÁTICO](Imagenes/ESQUEMATICO.pnG)
 
+
 Por lo tanto, el módulo del maestro transceptor cuenta con un conector GPIO macho de 40 pines (J1) que permite la comunicación serial entre la Raspberry pi y el microcontrolador, y, además, proporciona la alimentación necesaria para los componentes de la PCB (microcontrolador y radio). Se adicionó un led que permite reconocer si el programa se está ejecutando en la Raspberry Pi.
 
 ## Código Python Controlador Mestro (Raspberry Pi 4)
