@@ -43,12 +43,12 @@ TEMP_TOMACORRIENTE = 0.0
 
 # --------------------------VARIABLES DE CONTROL DE FLUJO PARA ATENDER ALERTAS DE Y PARA CON EL MICROCONTROLADOR--------------------------
 
-#ESPERAR_1 = 0
-#ESPERAR_2 = 0
-#ESPERAR_3 = 0
-#ESPERAR_4 = 0
-#ESPERAR_5 = 0
-#ESPERAR_6 = 0
+ESPERAR_1 = 0
+ESPERAR_2 = 0
+ESPERAR_3 = 0
+ESPERAR_4 = 0
+ESPERAR_5 = 0
+ESPERAR_6 = 0
 
 # -----------FUNCION PARA EL ENVIO DE DATOS A UBIDOTS-----------
 
@@ -100,6 +100,27 @@ def OBTENER_DATO(device, variable):
 
 def LEER_MICRO():
     #
+    global DIMMER
+    global INTERRUP
+    global DISP_COMIDA
+    global DISP_AGUA 
+    global CURRENT 
+    global TOMA
+
+    global TEMP_CICLO 
+    global TEMP_INTERRUPTOR
+    global TEMP_COMIDA
+    global TEMP_AGUA
+    global TEMP_CORRIENTE 
+    global TEMP_TOMACORRIENTE 
+
+    global ESPERAR_1 
+    global ESPERAR_2 
+    global ESPERAR_3 
+    global ESPERAR_4 
+    global ESPERAR_5 
+    global ESPERAR_6 
+
     if SERIAL.readable() == True:
         LEER = SERIAL.read()
         if LEER != bytes(''.encode()):

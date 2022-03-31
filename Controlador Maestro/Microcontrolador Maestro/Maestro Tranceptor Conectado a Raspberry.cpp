@@ -149,6 +149,7 @@ int main (void)
         if(FG_INTERRUPTOR_OFF == 1)
         {
             PC.printf("FUNCION APAGAR INTERRUPTOR\r\n");
+            wait_ms(100);
             RASPBERRY.putc('I');                        //RESPONDER QUE SE RECIBIO LA ORDEN
             PC.printf("RESPONDIO CON UNA I \r\n");
             ERF_INTERRUP_OFF = 0;
