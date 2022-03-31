@@ -298,6 +298,4 @@ if name == 'main':
                 while ESPERAR_6 == 1:
                     LEER_MICRO()
                                     
-        print('El bucle está operando')
-
-        #ANTIBLOQUEO: FUNCION QUE INICIE UN CONTADOR, CUANDO EL CONTADOR EXCEDA EL SEGUNDO REVISE SI ES QUE TIENE ALGO POR LEER, ATIENDA EL LLAMADO Y AHÍ SI VUELVA A INSISTIR CON LO QUE QUIER ENVIAR
+        print('Ejecutando...')
