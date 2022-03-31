@@ -23,7 +23,7 @@ AGUA = "dispensador_agua"                       # VARIABLE: Control para activac
 CORRIENTE = "sen_cor"                           # VARIABLE: Valor de corriente sensada
 TOMA_CORRIENTE = "toma_cor"                     # VARIABLE: On/off para toma corriente
 
-# -------------Variables locales usadas para almacenar lo valores rescatados y a enviar a Ubidots----------
+# -------------Variables locales usadas para almacenar los valores rescatados y a enviar a Ubidots----------
 
 DIMMER = 0
 INTERRUP = 0
@@ -104,9 +104,16 @@ def LEER_MICRO():
         LEER = SERIAL.read()
         if LEER != bytes(''.encode()):
             print(LEER)
+            # ------CAMARA--------
+            if LEER == bytes('P'.encode()):
+                print('PUERTA SE ABRIO')
+                temp = 'T'
+                SERIAL.write(temp.encode())
+                os.system('python3 CAPTURA_CAMARA.py')  #Llama programa de captura de video y envio por correo electronico                
+                print('GRABACION Y ENVIO COMPLETADO')
             #-------------------------------------ALERTAS EXTERNAS (ALERTAS PROBOCADAS POR MENSAJES ENVIADOS DESDE LOS MÓDULOS DE CONTROL)------------------------------------
             if LEER == bytes('C'.encode()):
-                print("EL MAESTRO TIENE UN CILO PARA ENVIARME")
+                print('EL MAESTRO TIENE UN CILO PARA ENVIARME')
                 temp = 'C'
                 SERIAL.write(temp.encode())
                 CICLO = 0
@@ -114,7 +121,7 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         DUTY = SERIAL.readline()
-                        print("El ciclo recibido es: " + str(DUTY) + "   " + str(type(DUTY)))
+                        print('El ciclo recibido es: ' + str(DUTY) + '    ' + str(type(DUTY)))
                         CICLO = 1
                         temp = 'c'
                         SERIAL.write(temp.encode())
@@ -130,7 +137,7 @@ def LEER_MICRO():
                             DIMMER = TEMP_CICLO = float(DUTY)
             # ------SENSOR--------
             if LEER == bytes('Z'.encode()):
-                print("EL MAESTRO TIENE UNA CORRIENTE PARA ENVIAR")
+                print('EL MAESTRO TIENE UNA CORRIENTE PARA ENVIAR')
                 temp = 'Z'
                 SERIAL.write(temp.encode())
                 COR = 0
@@ -138,21 +145,15 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         corriente = SERIAL.readline()
-                        print("LA CORRIENTE RECIBIDA ES : " + str(corriente) + "   " + str(type(corriente)))
+                        print('LA CORRIENTE RECIBIDA ES : ' + str(corriente) + '   ' + str(type(corriente)))
                         COR = 1
                         temp = 'z'
                         SERIAL.write(temp.encode())
                         COR_ENV = float(corriente)
                         COR_ENV = COR_ENV / 100
-                        print("LA CORRIENTE EN MEMORIA ES: " + str(COR_ENV) + "   " + str(type(COR_ENV)))
+                        print('LA CORRIENTE EN MEMORIA ES: ' + str(COR_ENV) + '   ' + str(type(COR_ENV)))
                         ENVIAR_DATO(CORRIENTE, COR_ENV)
-            # ------CAMARA--------
-            if LEER == bytes('P'.encode()):
-                print("PUERTA SE ABRIO")
-                temp = 'T'
-                SERIAL.write(temp.encode())
-                os.system('python3 CAPTURA_CAMARA.py')  #Llama programa de captura de video y envio por correo electronico                
-                print("GRABACION Y ENVIO COMPLETADO ")
+            
             #-------------------------------------ALERTAS ESPERADAS (ALERTAS GENERADAS EN RESPUESTAS A PETICIONES GENERADAS POR RASPBERRY)------------------------------------
             
             if LEER == bytes('U'.encode()):  # EL MICRO ESTA LISTO PARA RECIBIR EL CICLO UTIL
@@ -167,7 +168,7 @@ def LEER_MICRO():
                         if LEER != bytes(''.encode()):
                             print(LEER)
                             if LEER == bytes('R'.encode()):
-                                print("DIMMER RECIBIO Y SETEO SU CICLO UTIL")
+                                print('DIMMER RECIBIO Y SETEO SU CICLO UTIL')
                                 RESPUESTA_1 = 1
                                 ESPERAR_1 = 0
 
@@ -203,12 +204,12 @@ if name == 'main':
     TEMP_CORRIENTE = OBTENER_DATO(DEVICE_LABEL, CORRIENTE)
     TEMP_TOMACORRIENTE = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
 
-    print("ESTADO INICIAL CICLO UTIL: " + str(TEMP_CICLO))
-    print("ESTADO INICIAL INTERRUPTO: " + str(TEMP_INTERRUPTOR))
-    print("ESTADO INICIAL DIS_COMIDA: " + str(TEMP_COMIDA))
-    print("ESTADO INICIAL DISPE_AGUA: " + str(TEMP_AGUA))
-    print("ESTADO INICIAL  CORRIENTE: " + str(TEMP_CORRIENTE))
-    print("ESTADO INICIAL TOMA_CORRI: " + str(TEMP_TOMACORRIENTE))
+    print('ESTADO INICIAL CICLO UTIL: ' + str(TEMP_CICLO))
+    print('ESTADO INICIAL INTERRUPTO: ' + str(TEMP_INTERRUPTOR))
+    print('ESTADO INICIAL DIS_COMIDA: ' + str(TEMP_COMIDA))
+    print('ESTADO INICIAL DISPE_AGUA: ' + str(TEMP_AGUA))
+    print('ESTADO INICIAL  CORRIENTE: ' + str(TEMP_CORRIENTE))
+    print('ESTADO INICIAL TOMA_CORRI: ' + str(TEMP_TOMACORRIENTE))
 
     while (True):
 
@@ -227,10 +228,10 @@ if name == 'main':
         #--------------COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALMACENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION--------------
 
         if INTERRUP != TEMP_INTERRUPTOR:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
-            print("El interruptor cambio")
+            print('El interruptor cambio')
             TEMP_INTERRUPTOR = INTERRUP
             if INTERRUP == 1.0:
-                print("Interruptor Activado")
+                print('Interruptor Activado')
                 TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
                 temp = 'B'
                 SERIAL.write(temp.encode())
@@ -240,7 +241,7 @@ if name == 'main':
 
             if INTERRUP == 0.0:
                 ENVIAR_DATO(CICLO_UTIL, 0)
-                print("Interruptor Desactivado")
+                print('Interruptor Desactivado')
                 temp = 'I'
                 SERIAL.write(temp.encode())
                 ESPERAR_2 = 1
@@ -249,7 +250,7 @@ if name == 'main':
                             
                             
         if DIMMER != TEMP_CICLO and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
-            print("El dimmer cambio")
+            print('El dimmer cambio')
             TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
             temp = 'A'
             SERIAL.write(temp.encode())
@@ -259,7 +260,7 @@ if name == 'main':
 
 
         if DISP_COMIDA != TEMP_COMIDA:  
-            print("La comida cambio")
+            print('La comida cambio')
             TEMP_COMIDA = DISP_COMIDA
             temp = 'D'
             SERIAL.write(temp.encode())
@@ -269,7 +270,7 @@ if name == 'main':
 
 
         if DISP_AGUA != TEMP_AGUA:  
-            print("El agua cambio")
+            print('El agua cambio')
             TEMP_AGUA = DISP_AGUA
             temp = 'E'
             SERIAL.write(temp.encode())
@@ -279,7 +280,7 @@ if name == 'main':
                         
 
         if TOMA != TEMP_TOMACORRIENTE:
-            print("La toma cambio cambio")
+            print('La toma cambio cambio')
             TEMP_TOMACORRIENTE = TOMA
 
             if TOMA == 1:
@@ -297,6 +298,6 @@ if name == 'main':
                 while ESPERAR_6 == 1:
                     LEER_MICRO()
                                     
-        print("el bucle está operando")
+        print('El bucle está operando')
 
         #ANTIBLOQUEO: FUNCION QUE INICIE UN CONTADOR, CUANDO EL CONTADOR EXCEDA EL SEGUNDO REVISE SI ES QUE TIENE ALGO POR LEER, ATIENDA EL LLAMADO Y AHÍ SI VUELVA A INSISTIR CON LO QUE QUIER ENVIAR
