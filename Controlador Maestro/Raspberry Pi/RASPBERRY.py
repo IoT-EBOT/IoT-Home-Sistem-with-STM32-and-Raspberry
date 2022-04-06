@@ -233,7 +233,6 @@ if name == 'main':
     print('ESTADO INICIAL TOMA_CORRI: ' + str(TEMP_TOMACORRIENTE))
 
     while (True):
-
         #-------------------------------------------------------------------------RECUPERAR DATOS DESDE UBIDOTS--------------------------------------------------------
 
         DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
@@ -320,3 +319,4 @@ if name == 'main':
                     LEER_MICRO()
                                     
         print('Ejecutando...')
+            
