@@ -1,9 +1,16 @@
 # -------------------------------------------------LIBRERIAS USADAS------------------------------------------
 
+from ast import Try
 import requests
 import serial
 import time
 import os
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email.encoders import encode_base64
 
 # -------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
 
@@ -95,6 +102,8 @@ def OBTENER_DATO(device, variable):
         return req.json()['last_value']['value']
     except:
         pass
+
+ 
 
 # -----------FUNCION PARA ATENDER ALERTAS INTERNAS Y EXTERNAS DERIVADAS DE LA COMUNICACION CON EL MICROCONTROLADOR-----------
 
@@ -234,89 +243,124 @@ if name == 'main':
 
     while (True):
 
-        #-------------------------------------------------------------------------RECUPERAR DATOS DESDE UBIDOTS--------------------------------------------------------
+        try:
+            #-------------------------------------------------------------------------RECUPERAR DATOS DESDE UBIDOTS--------------------------------------------------------
 
-        DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
-        INTERRUP = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
-        DISP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
-        DISP_AGUA = OBTENER_DATO(DEVICE_LABEL, AGUA)
-        TOMA = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
+            DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
+            INTERRUP = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
+            DISP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
+            DISP_AGUA = OBTENER_DATO(DEVICE_LABEL, AGUA)
+            TOMA = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
 
-        #----------------------------------------REVISAR SI EL MICROCONTROLADOR TIENE ALGUNA ALERTA PARA RASPBERRY Y/O UBIDOTS----------------------------------------
+            #----------------------------------------REVISAR SI EL MICROCONTROLADOR TIENE ALGUNA ALERTA PARA RASPBERRY Y/O UBIDOTS----------------------------------------
 
-        LEER_MICRO ()
+            LEER_MICRO ()
 
-        #--------------COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALMACENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION--------------
+            #--------------COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALMACENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION--------------
 
-        if INTERRUP != TEMP_INTERRUPTOR:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
-            print('El interruptor cambio')
-            TEMP_INTERRUPTOR = INTERRUP
-            if INTERRUP == 1.0:
-                print('Interruptor Activado')
+            if INTERRUP != TEMP_INTERRUPTOR:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
+                print('El interruptor cambio')
+                TEMP_INTERRUPTOR = INTERRUP
+                if INTERRUP == 1.0:
+                    print('Interruptor Activado')
+                    TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
+                    LEER_MICRO()
+                    temp = 'B'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_1 = 1
+                    while ESPERAR_1 == 1:
+                        LEER_MICRO()
+
+                if INTERRUP == 0.0:
+                    ENVIAR_DATO(CICLO_UTIL, 0)
+                    print('Interruptor Desactivado')
+                    LEER_MICRO()
+                    temp = 'I'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_2 = 1
+                    while ESPERAR_2 == 1:
+                        LEER_MICRO()
+                                
+                                
+            if DIMMER != TEMP_CICLO and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
+                print('El dimmer cambio')
                 TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
-                temp = 'B'
+                LEER_MICRO()
+                temp = 'A'
                 SERIAL.write(temp.encode())
                 ESPERAR_1 = 1
                 while ESPERAR_1 == 1:
                     LEER_MICRO()
 
-            if INTERRUP == 0.0:
-                ENVIAR_DATO(CICLO_UTIL, 0)
-                print('Interruptor Desactivado')
-                temp = 'I'
+
+            if DISP_COMIDA != TEMP_COMIDA:  
+                print('La comida cambio')
+                TEMP_COMIDA = DISP_COMIDA
+                LEER_MICRO()
+                temp = 'D'
                 SERIAL.write(temp.encode())
-                ESPERAR_2 = 1
-                while ESPERAR_2 == 1:
+                ESPERAR_3 = 1
+                while ESPERAR_3 == 1:
                     LEER_MICRO()
-                            
-                            
-        if DIMMER != TEMP_CICLO and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
-            print('El dimmer cambio')
-            TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
-            temp = 'A'
-            SERIAL.write(temp.encode())
-            ESPERAR_1 = 1
-            while ESPERAR_1 == 1:
+
+
+            if DISP_AGUA != TEMP_AGUA:  
+                print('El agua cambio')
+                TEMP_AGUA = DISP_AGUA
                 LEER_MICRO()
-
-
-        if DISP_COMIDA != TEMP_COMIDA:  
-            print('La comida cambio')
-            TEMP_COMIDA = DISP_COMIDA
-            temp = 'D'
-            SERIAL.write(temp.encode())
-            ESPERAR_3 = 1
-            while ESPERAR_3 == 1:
-                LEER_MICRO()
-
-
-        if DISP_AGUA != TEMP_AGUA:  
-            print('El agua cambio')
-            TEMP_AGUA = DISP_AGUA
-            temp = 'E'
-            SERIAL.write(temp.encode())
-            ESPERAR_4 = 1
-            while ESPERAR_4 == 1:
-                LEER_MICRO()
-                        
-
-        if TOMA != TEMP_TOMACORRIENTE:
-            print('La toma cambio cambio')
-            TEMP_TOMACORRIENTE = TOMA
-
-            if TOMA == 1:
-                temp = 'F'
+                temp = 'E'
                 SERIAL.write(temp.encode())
-                ESPERAR_5 = 1
-                while ESPERAR_5 == 1:
+                ESPERAR_4 = 1
+                while ESPERAR_4 == 1:
                     LEER_MICRO()
                             
 
-            elif TOMA == 0:
-                temp = 'G'
-                SERIAL.write(temp.encode())
-                ESPERAR_6 = 1
-                while ESPERAR_6 == 1:
+            if TOMA != TEMP_TOMACORRIENTE:
+                print('La toma cambio cambio')
+                TEMP_TOMACORRIENTE = TOMA
+
+                if TOMA == 1:
                     LEER_MICRO()
-                                    
-        print('Ejecutando...')
+                    temp = 'F'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_5 = 1
+                    while ESPERAR_5 == 1:
+                        LEER_MICRO()
+                                
+
+                elif TOMA == 0:
+                    LEER_MICRO()
+                    temp = 'G'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_6 = 1
+                    while ESPERAR_6 == 1:
+                        LEER_MICRO()
+                                        
+            print('Ejecutando...')
+
+        except:
+            print('ERROR DETECTADO')
+            CORREO_DESTINO = 'dgomezbernal24@gmail.com'
+            CORREO_DESTINO_2 = 'cristiancobos2002@gmail.com'
+            CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
+            PASSWORD = 'E-BOT2021' 
+            smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
+            msg = MIMEMultipart()
+
+            msg['To'] = CORREO_DESTINO
+            msg['To'] = CORREO_DESTINO_2
+            msg['From'] = CORREO_MAESTRO
+            msg['Subject'] = 'ERROR DETECTADO'
+            msg.attach(MIMEText('ERROR EN EL MODULO MAESTRO DERECTADO '))
+
+            server = smtplib.SMTP(smtp_server)
+            server.starttls()
+            server.login(CORREO_MAESTRO, PASSWORD)
+            server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
+            server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
+            print("ALERTA DE ERROR ENVIADA ")
+            server.quit()
+           
+
+
+
