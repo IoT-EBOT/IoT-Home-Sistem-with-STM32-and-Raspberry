@@ -16,7 +16,7 @@
 #define TAMANO_DIR  3
 #define TAMANO      4
 
-#define INTEN       3
+#define INTEN       2
 
 Serial PC(PA_2,PA_3);//TX,RX
 
