@@ -264,6 +264,7 @@ if name == 'main':
                 if INTERRUP == 1.0:
                     print('Interruptor Activado')
                     TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
+                    LEER_MICRO()
                     temp = 'B'
                     SERIAL.write(temp.encode())
                     ESPERAR_1 = 1
@@ -273,6 +274,7 @@ if name == 'main':
                 if INTERRUP == 0.0:
                     ENVIAR_DATO(CICLO_UTIL, 0)
                     print('Interruptor Desactivado')
+                    LEER_MICRO()
                     temp = 'I'
                     SERIAL.write(temp.encode())
                     ESPERAR_2 = 1
@@ -283,6 +285,7 @@ if name == 'main':
             if DIMMER != TEMP_CICLO and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
                 print('El dimmer cambio')
                 TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
+                LEER_MICRO()
                 temp = 'A'
                 SERIAL.write(temp.encode())
                 ESPERAR_1 = 1
@@ -293,6 +296,7 @@ if name == 'main':
             if DISP_COMIDA != TEMP_COMIDA:  
                 print('La comida cambio')
                 TEMP_COMIDA = DISP_COMIDA
+                LEER_MICRO()
                 temp = 'D'
                 SERIAL.write(temp.encode())
                 ESPERAR_3 = 1
@@ -303,6 +307,7 @@ if name == 'main':
             if DISP_AGUA != TEMP_AGUA:  
                 print('El agua cambio')
                 TEMP_AGUA = DISP_AGUA
+                LEER_MICRO()
                 temp = 'E'
                 SERIAL.write(temp.encode())
                 ESPERAR_4 = 1
@@ -315,6 +320,7 @@ if name == 'main':
                 TEMP_TOMACORRIENTE = TOMA
 
                 if TOMA == 1:
+                    LEER_MICRO()
                     temp = 'F'
                     SERIAL.write(temp.encode())
                     ESPERAR_5 = 1
@@ -323,6 +329,7 @@ if name == 'main':
                                 
 
                 elif TOMA == 0:
+                    LEER_MICRO()
                     temp = 'G'
                     SERIAL.write(temp.encode())
                     ESPERAR_6 = 1
@@ -333,13 +340,15 @@ if name == 'main':
 
         except:
             print('ERROR DETECTADO')
-            CORREO_DESTINO = 'dgomezbernal24@gmail.com,cristiancobos2002@gmail.com'
+            CORREO_DESTINO = 'dgomezbernal24@gmail.com'
+            CORREO_DESTINO_2 = 'cristiancobos2002@gmail.com'
             CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
             PASSWORD = 'E-BOT2021' 
             smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
             msg = MIMEMultipart()
 
             msg['To'] = CORREO_DESTINO
+            msg['To'] = CORREO_DESTINO_2
             msg['From'] = CORREO_MAESTRO
             msg['Subject'] = 'ERROR DETECTADO'
             msg.attach(MIMEText('ERROR EN EL MODULO MAESTRO DERECTADO '))
@@ -348,6 +357,7 @@ if name == 'main':
             server.starttls()
             server.login(CORREO_MAESTRO, PASSWORD)
             server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
+            server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
             print("ALERTA DE ERROR ENVIADA ")
             server.quit()
            
