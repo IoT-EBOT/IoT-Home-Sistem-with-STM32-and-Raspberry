@@ -151,6 +151,7 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         DUTY = SERIAL.readline()
+                        
                         print('El ciclo recibido es: ' + str(DUTY) + '    ' + str(type(DUTY)))
                         CICLO = 1
                         temp = 'c'
@@ -175,6 +176,7 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         corriente = SERIAL.readline()
+                        
                         print('LA CORRIENTE RECIBIDA ES : ' + str(corriente) + '   ' + str(type(corriente)))
                         COR = 1
                         temp = 'z'
