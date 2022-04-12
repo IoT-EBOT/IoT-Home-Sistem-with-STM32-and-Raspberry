@@ -1,4 +1,4 @@
-//CODIGO MICROCONTROALDOR MAESTRO
+//CODIGO MAESTRO-TRANSCEPTOR RASPBERRY PI Y PERISFERICOS
 //DANIEL FELIPE GOMEZ BERNAL
 //CRISTIAN DAVID COBOS SARTA      
 
@@ -47,7 +47,7 @@ nRF24L01P RADIO(PB_5, PB_4, PB_3, PA_15, PA_12);    // MOSI, MISO, SCK, CSN, CE,
 Serial RASPBERRY(PA_9,PA_10);  //TX,RX
 Serial PC(PA_2,PA_3);  //TX,RX
 DigitalOut ON(PC_13);
-
+Timeout ESPERAR_T_CAMARA;
 //------------------------------------------------------------------------ DEFINICION DE FUNCIONES ---------------------------------------------------------------
 
 void CONF_INIC (int FRECUENCIA, int POTENCIA, int VELOCIDAD, unsigned long long DIRECCION, int ANCHO, int TUBERIA);
@@ -57,6 +57,7 @@ void RECIBIR (void);
 void ENVIAR_CICLO (void);
 void LEER_RASPBERRY (void);
 void ENVIAR_ALERTAS (void);
+void HABILITAR_RECP_CAMARA (void);
 
 //------------------------------------------------------------------------ VARIABLES GLOBALES ---------------------------------------------------------------
 
@@ -77,17 +78,20 @@ char WATE_ON [TAM_TX] = {'W','R','O','N'};
 char CONF_COR [TAM_TX] = {'A','M','P','R'};
 char TOMA_SI [TAM_TX] = {'L','D','O','N'};
 char TOMA_NO [TAM_TX] = {'L','D','O','F'};
+char TOMA_I_R [TAM_TX] = {'T','E','I','R'};
 char CAMARA_OK [TAM_TX] = {'S','G','Y','E'};
 
 int CENTENAS = 0;
 int DECENAS = 0;
 int UNIDADES = 0;
-int PORCENTAJE = 0;
+int PORCENTAJE = 101;
+int PORCENTAJE_T = 0;
 
 int DECIMAL  = 0;
 int UNIDAD_1 = 0;
 int UNIDAD_2 = 0;
-float VALOR_COR = 0.0;
+float VALOR_COR = 100.0;
+float VALOR_COR_T = 0.0;
 
 char FG_COMIDA = 0;
 char FG_AGUA = 0;
@@ -99,6 +103,9 @@ char LETRA = ' ';
 char E_CICLO = 1;
 char E_COR = 1; 
 char E_CAMARA = 1;
+char E_COR_I = 1;
+
+char PERMISO_CAMARA = 1;
 
 char ERF_CICLO = 1;
 char ERF_INTERRUP_OFF = 1;
@@ -110,6 +117,15 @@ char ERF_TOMA_OFF = 1;
 char CRF_CAMARA = 1;
 char CRF_DIMMER = 1;
 char CRF_CORRIENTE = 1;
+
+char ERF_CICLO_C = 0;
+char ERF_INTERRUP_OFF_C = 0;
+char ERF_COMIDA_C = 0;
+char ERF_AGUA_C = 0;
+char ERF_TOMA_ON_C = 0;
+char ERF_TOMA_OFF_C = 0;
+
+char TOMA_C = 0;
 
 int main (void)
 {
@@ -149,7 +165,6 @@ int main (void)
         if(FG_INTERRUPTOR_OFF == 1)
         {
             PC.printf("FUNCION APAGAR INTERRUPTOR\r\n");
-            wait_ms(100);
             RASPBERRY.putc('I');                        //RESPONDER QUE SE RECIBIO LA ORDEN
             PC.printf("RESPONDIO CON UNA I \r\n");
             ERF_INTERRUP_OFF = 0;
@@ -182,6 +197,7 @@ int main (void)
             ERF_TOMA_ON = 0;
             ENVIAR_ALERTAS();
             TOMA_ON = 0;
+            TOMA_C = 1;
         }    
         if(TOMA_OFF == 1)
         {
@@ -191,6 +207,7 @@ int main (void)
             ERF_TOMA_OFF = 0;
             ENVIAR_ALERTAS();
             TOMA_OFF = 0;
+            TOMA_C = 0;
         } 
 
         //---------------------------------------------------------------------- REVISAR SI EL RADIO RECIBIÓ ALERTAS --------------------------------------------------------------
@@ -202,10 +219,20 @@ int main (void)
             //------------------------------------------------------------ ALERTAS ESPERADAS DESDE CAMARA, DIMMER Y SENSOR DE CORRIENTE ------------------------------------------------
             if(RX_DATA[0] == 'S' && RX_DATA[1] == 'P' && RX_DATA[2] == 'A' && RX_DATA[3] == 'D')
             {
-                PC.printf("LA PUERTA SE ABRIO\r\n"); 
-                RASPBERRY.putc('P');  
-                CRF_CAMARA = 0;
-                ENVIAR_ALERTAS();
+                if(PERMISO_CAMARA == 1)
+                {
+                    PC.printf("LA PUERTA SE ABRIO\r\n"); 
+                    RASPBERRY.putc('P');  
+                    CRF_CAMARA = 0;
+                    ENVIAR_ALERTAS();
+                    PERMISO_CAMARA = 0;
+                    ESPERAR_T_CAMARA.attach(&HABILITAR_RECP_CAMARA,60);
+                }
+                else if(PERMISO_CAMARA == 0)
+                {
+                    PC.printf("LA PUERTA SE ABRIO\r\n");
+                    CRF_CAMARA = 0;
+                }
             }
                    
             if(RX_DATA [3] == 'C')
@@ -216,16 +243,24 @@ int main (void)
                 CENTENAS = (RX_DATA [0] - 48) * 100;
                 DECENAS = (RX_DATA [1] - 48) * 10;
                 UNIDADES = (RX_DATA [2] - 48);
-                PORCENTAJE = CENTENAS + DECENAS + UNIDADES;
+                PORCENTAJE_T = CENTENAS + DECENAS + UNIDADES;
                
-                PC.printf("%d %d %d %d \r\n",CENTENAS,DECENAS,UNIDADES, PORCENTAJE);
-                 
-                RASPBERRY.putc('C');
-                E_CICLO = 0;
-                while (E_CICLO == 0)
-                {
+               if(PORCENTAJE_T != PORCENTAJE && PORCENTAJE_T >= 0 && PORCENTAJE_T <= 100)
+               {
+                    PORCENTAJE = PORCENTAJE_T;
+                    RASPBERRY.putc('C');
+                    E_CICLO = 0;
+                    /*while (E_CICLO == 0)    //REVISAR
+                    {
+                        LEER_RASPBERRY();
+                    }*/
                     LEER_RASPBERRY();
-                }
+               }
+               else
+               {
+                   PC.printf("%d %d %d %d \r\n",CENTENAS,DECENAS,UNIDADES, PORCENTAJE);
+               }
+                
             }
             if(RX_DATA [3] == 'Z')
             {
@@ -236,15 +271,35 @@ int main (void)
                 UNIDAD_1 = (RX_DATA [1] - 48) *10;
                 UNIDAD_2 = (RX_DATA [2] - 48);  
                 
-                VALOR_COR = DECIMAL + UNIDAD_1 + UNIDAD_2;
-                              
-                PC.printf("%f \r\n",VALOR_COR);                                  
-                RASPBERRY.putc('Z');
-   
-                E_COR = 0;                                                  
-                while (E_COR == 0)
+                VALOR_COR_T = DECIMAL + UNIDAD_1 + UNIDAD_2;
+                                                               
+                if(VALOR_COR_T != VALOR_COR && VALOR_COR_T >= 0.0 && VALOR_COR_T <= 500.0)
                 {
+                    VALOR_COR = VALOR_COR_T;
+                    RASPBERRY.putc('Z');
+                    E_COR = 0;                                                  
+                    /*while (E_COR == 0)
+                    {
+                        LEER_RASPBERRY();
+                    }*/
                     LEER_RASPBERRY();
+                }
+                else
+                {
+                    PC.printf("%f,%f\r\n",VALOR_COR_T,VALOR_COR); 
+                }
+            }
+            if(RX_DATA[0] == 'T' && RX_DATA[1] == 'I' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
+            {
+                if (TOMA_C == 0)
+                {
+                    RASPBERRY.putc('Q');
+                    E_COR_I = 0;
+                    TOMA_C = 1;
+                }
+                else
+                {
+                    E_COR_I = 0;
                 }
             }
             //------------------------------------------------------------ CONFIRMACIONES DE RECEPCION DE ALERTAS ------------------------------------------------
@@ -252,31 +307,37 @@ int main (void)
             if(RX_DATA[0] == 'U' && RX_DATA[1] == 'U' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
             {
                 ERF_CICLO = 1;
+                ERF_CICLO_C = 0;
             }
 
             if(RX_DATA[0] == 'O' && RX_DATA[1] == 'O' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
             {
                 ERF_INTERRUP_OFF = 1;
+                ERF_INTERRUP_OFF_C = 0;
             }    
 
             if(RX_DATA[0] == 'D' && RX_DATA[1] == 'F' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
             {
                 ERF_COMIDA = 1;
+                ERF_COMIDA_C = 0;
             }    
 
             if(RX_DATA[0] == 'D' && RX_DATA[1] == 'A' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
             {
                 ERF_AGUA = 1;
+                ERF_AGUA_C = 0;
             }    
 
             if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
             {
                 ERF_TOMA_ON = 1;
+                ERF_TOMA_ON_C = 0;
             }    
 
             if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
             {
                 ERF_TOMA_OFF = 1;
+                ERF_TOMA_OFF_C = 0;
             }    
 
         }
@@ -434,7 +495,11 @@ void LEER_RASPBERRY (void)
                 E_CAMARA = 1;
                 break;
             }
-                
+            case 'Q':
+            {
+                E_COR_I = 1;
+                break;
+            }
         }    
     }
 }
@@ -442,7 +507,7 @@ void LEER_RASPBERRY (void)
 void ENVIAR_ALERTAS (void)
 {
     //--------------------------------------------------------------------ENVIAR CICLO ÚTIL AL DIMMER------------------------------------------------------------
-    if (ERF_CICLO == 0)
+    if (ERF_CICLO == 0 && ERF_CICLO_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
@@ -460,10 +525,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_CICLO = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_CICLO_C = 0;
             }
         }
+        ERF_CICLO_C = ERF_CICLO_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_CICLO_C);
     }
-    if(ERF_INTERRUP_OFF == 0)
+    else if(ERF_CICLO == 0 && ERF_CICLO_C > 20)
+    {
+        ERF_CICLO_C = 0;
+        ERF_CICLO = 1;
+    }
+    if(ERF_INTERRUP_OFF == 0 && ERF_INTERRUP_OFF_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
@@ -481,10 +554,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_INTERRUP_OFF = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_INTERRUP_OFF_C = 0;
             }    
         }
+        ERF_INTERRUP_OFF_C = ERF_INTERRUP_OFF_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_INTERRUP_OFF_C);
     }
-    if(ERF_COMIDA == 0)
+    else if(ERF_INTERRUP_OFF == 0 && ERF_INTERRUP_OFF_C > 20)
+    {
+        ERF_INTERRUP_OFF_C = 0;
+        ERF_INTERRUP_OFF = 1;
+    }
+    if(ERF_COMIDA == 0 && ERF_COMIDA_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
@@ -502,10 +583,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_COMIDA = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_COMIDA_C = 0;
             }    
-        }    
+        }
+        ERF_COMIDA_C = ERF_COMIDA_C + 1;    
+        PC.printf("CONTADOR = %i \r\n",ERF_COMIDA_C);
     }
-    if(ERF_AGUA == 0)
+    else if(ERF_COMIDA == 0 && ERF_COMIDA_C > 20)
+    {
+        ERF_COMIDA_C = 0;
+        ERF_COMIDA = 1;
+    }
+    if(ERF_AGUA == 0 && ERF_AGUA_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
@@ -523,10 +612,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_AGUA = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_AGUA_C = 0;
             }    
-        }    
+        } 
+        ERF_AGUA_C = ERF_AGUA_C + 1;   
+        PC.printf("CONTADOR = %i \r\n",ERF_COMIDA_C);
     }
-    if (ERF_TOMA_ON == 0)
+    else if(ERF_AGUA == 0 && ERF_AGUA_C > 20)
+    {
+        ERF_AGUA_C = 0;
+        ERF_AGUA = 1;
+    }
+    if (ERF_TOMA_ON == 0 && ERF_TOMA_ON_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
@@ -544,10 +641,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_TOMA_ON = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_TOMA_ON_C = 0;
             }    
-        }    
+        } 
+        ERF_TOMA_ON_C = ERF_TOMA_ON_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_TOMA_ON_C);
     }
-    if(ERF_TOMA_OFF == 0)
+    else if (ERF_TOMA_ON == 0 && ERF_TOMA_ON_C > 20)
+    {
+        ERF_TOMA_ON_C = 0;
+        ERF_TOMA_ON = 1;
+    }
+    if(ERF_TOMA_OFF == 0 && ERF_TOMA_OFF_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
@@ -565,10 +670,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_TOMA_OFF = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_TOMA_OFF_C = 0;
             }    
-        }    
+        }
+        ERF_TOMA_OFF_C = ERF_TOMA_OFF_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_TOMA_OFF_C);
     }
-    if(CRF_CAMARA == 0)
+    else if(ERF_TOMA_OFF == 0 && ERF_TOMA_OFF_C > 20)
+    {
+        ERF_TOMA_OFF_C = 0;
+        ERF_TOMA_OFF = 1;
+    }
+    if(CRF_CAMARA == 0) //AQUI HAY QUE CONDICIONAR EL TEMA DE QUE SI LA ALAERTA SE RECIBIÓ HACE MENOS DE 1 MINUTO IGNORE LAS ALERTAS QUE LLEGUEN
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_PUERTA, TAM_DIRECCIONES, RF_PUERTA);
@@ -578,10 +691,10 @@ void ENVIAR_ALERTAS (void)
         RADIO.setReceiveMode();
         wait_ms(250);                                                      
         E_CAMARA = 0;
-        while (E_CAMARA == 0)
+        /*while (E_CAMARA == 0)
         {
             LEER_RASPBERRY();
-        }
+        }*/
         CRF_CAMARA = 1;
     }
     if(CRF_DIMMER == 0)
@@ -616,4 +729,25 @@ void ENVIAR_ALERTAS (void)
         PC.printf("\r\n");
         CRF_CORRIENTE = 1;
     }
+    if (E_COR_I == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
+        RADIO.write(NRF24L01P_PIPE_P0, TOMA_I_R, TAM_TX);
+        PC.printf("SE RESPONDIO \r\n");
+        RADIO.setRfFrequency(MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms(250);
+        for(int i = 0; i<TAM_TX; i++)
+        {
+            PC.printf("%c",CONF_COR[i]);
+        }
+        PC.printf("\r\n");
+        E_COR_I = 1;
+    }
+}
+
+void HABILITAR_RECP_CAMARA (void)
+{
+    PERMISO_CAMARA = 1;
 }

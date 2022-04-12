@@ -16,13 +16,13 @@
 #define TAMANO_DIR  3
 #define TAMANO      4
 
-#define INTEN       2
+#define INTEN       20
 
 Serial PC(PA_2,PA_3);//TX,RX
 
 nRF24L01P RADIO(PB_5, PB_4, PB_3, PA_15, PA_12);    // MOSI, MISO, SCK, CSN, CE, IRQ----IRQ NO ESTA DEFINIDO NI CONECTADO, LA RECOMENDACION VIENE DADA POR LA LIBRERIA USADA
 
-DigitalOut      ON(PC_13);
+//DigitalOut      ON(PC_13);
 DigitalIn       SENSOR_PUERTA (PB_10); //(PULL UP) |PIN EN ALTO: PUERTA ABIERTA, PIN EN BAJO PUERTA CERRADA  
 DigitalOut      INDICADOR (PA_10);     //INDICADOR LED PUERTA ABIERTA -- POSIBLE INDICADOR CUANDO CORREO SEA ENVIADO O GRABACION TOMADA 
 
@@ -43,7 +43,7 @@ char RESP = 0;
 
 int main ()
 {   
-    ON = 0;
+    //ON = 0;
     RADIO.powerUp();                                                                             //Radio ENCENDIDO y en modo STANDBY
     CONF_GENER (RF_CAMARA, POTENCIA_T, VEL_T, DIR_CAMARA, TAMANO_DIR, NRF24L01P_PIPE_P0);                     //CONFIGURACION INICIAL radio
     CONF_RADIO (DIR_MAESTRO, TAMANO); 
@@ -162,4 +162,3 @@ void ENVIAR_A(void)
         }           
     }   
 }
-

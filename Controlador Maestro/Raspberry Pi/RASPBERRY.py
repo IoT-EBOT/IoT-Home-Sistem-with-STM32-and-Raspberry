@@ -185,7 +185,12 @@ def LEER_MICRO():
                         COR_ENV = COR_ENV / 100
                         print('LA CORRIENTE EN MEMORIA ES: ' + str(COR_ENV) + '   ' + str(type(COR_ENV)))
                         ENVIAR_DATO(CORRIENTE, COR_ENV)
-            
+                        
+            if LEER == bytes('Q'.encode()):
+                temp = 'Q'
+                SERIAL.write(temp.encode())
+                ENVIAR_DATO(TOMA_CORRIENTE, 1.0)
+                TOMA = TEMP_TOMACORRIENTE = 1.0
             #-------------------------------------ALERTAS ESPERADAS (ALERTAS GENERADAS EN RESPUESTAS A PETICIONES GENERADAS POR RASPBERRY)------------------------------------
             
             if LEER == bytes('U'.encode()):  # EL MICRO ESTA LISTO PARA RECIBIR EL CICLO UTIL
@@ -362,7 +367,4 @@ if name == 'main':
             server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
             print("ALERTA DE ERROR ENVIADA ")
             server.quit()
-           
-
-
-
+            
