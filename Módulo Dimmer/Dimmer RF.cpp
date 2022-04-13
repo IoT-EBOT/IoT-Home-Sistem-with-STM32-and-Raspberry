@@ -44,6 +44,8 @@ void AUMENTAR (void);
 void DISMINUIR (void);
 void OFF_DIMM (void);
 
+int INTENTOS = 0;
+
 char RX_DATA [TAMANO];
 char TX_DATA [TAMANO];
 char CU_DATA [TAMANO];
@@ -84,6 +86,8 @@ int main ()
     F_SUBIR.rise(&AUMENTAR);
     F_BAJAR.rise(&DISMINUIR);
     F_APAGAR.rise(&OFF_DIMM);
+
+    ENVIARC();
     
     while (1)
     {
@@ -222,8 +226,6 @@ void DESACTIVAR (void)
 }
 void ENVIARC (void)
 {
-    int INTENTOS = 0;
-    
     TX_DATA [0] = ((CENTENAS / 100) + 48);
     TX_DATA [1] = ((DECENAS / 10) + 48);
     TX_DATA [2] = UNIDADES + 48;

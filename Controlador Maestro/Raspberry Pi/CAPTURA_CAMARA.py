@@ -22,7 +22,8 @@ FORMATO = cv2.VideoWriter_fourcc('X','2','6','4')
 VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
 
 #-----------DATOS ENVIO CORREO------------------
-CORREO_DESTINO = 'dgomezbernal24@gmail.com,cristiancobos2002@gmail.com'
+CORREO_DESTINO = 'dgomezbernal24@gmail.com'
+CORREO_DESTINO_2 = 'cristiancobos2002@gmail.com'
 CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
 PASSWORD = 'E-BOT2021' 
 smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
@@ -31,6 +32,7 @@ msg = MIMEMultipart()
 def ENVIO_CORREO():
 
     msg['To'] = CORREO_DESTINO
+    msg['To'] = CORREO_DESTINO_2
     msg['From'] = CORREO_MAESTRO
     msg['Subject'] = 'ALERTA PUERTA'
     msg.attach(MIMEText('GRABACION DE ALERTA DETECTADA EN LA PUERTA '))
@@ -47,6 +49,7 @@ def ENVIO_CORREO():
     server.starttls()
     server.login(CORREO_MAESTRO, PASSWORD)
     server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
+    server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
     print("GRABACION ENVIADA")
     server.quit()
     

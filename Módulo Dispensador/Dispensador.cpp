@@ -7,6 +7,7 @@
 
 #define D_COMIDA    10
 #define D_AGUA      5
+#define D_ACTIVACION 60
 
 #define MI_FREQ_MST 2400
 #define DIR_MAESTRO 0x000002   //DIRECCION DE RECEPCION DEL MAESTRO
@@ -32,6 +33,8 @@ BusOut  WATER(PA_11,PA_10);
 
 Timeout DETENER_C;
 Timeout DETENER_A;
+Timeout HABILITAR_COMIDA;
+Timeout HABILITAR_AGUA;
 
 void CONF_GENER (int FRECUENCIA, int POTENCIA, int VELOCIDAD, unsigned long long DIRECCION_RX, int TAMAÑO_D, int TUBERIA);
 void CONF_RADIO (unsigned long long DIRECCION_TX, int TAM_INFO);
@@ -40,6 +43,8 @@ void PREPARAR (int ANCHO, unsigned long long DIRECCION, int TAM_DIR, int RF);
 
 void APAGAR_COMIDA (void);
 void APAGAR_AGUA (void);
+void HABILITAR_FOOD (void);
+void HABILITAR_WATER (void);
 
 char RX_DATA [TAMANO];
 char CONFIRMAR [TAMANO] = {'D','F','O','N'};
@@ -50,6 +55,9 @@ char AGUA = 0;
 
 char C_D = 0;
 char C_A = 0;
+
+char PERMISO_COMIDA = 1;
+char PERMISO_AGUA = 1;
 
 int main ()
 {
@@ -74,7 +82,12 @@ int main ()
             RECIBIR();     
             if(RX_DATA [0] == 'F' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'N')
             {
-                COMIDA = 1;
+                if(PERMISO_COMIDA == 1)
+                {
+                    COMIDA = 1;
+                    PERMISO_COMIDA = 0;
+                    HABILITAR_COMIDA.attach(&HABILITAR_FOOD,D_ACTIVACION);
+                }
                 RADIO.setTransmitMode();
                 char RESPUESTA = 0;
                 while(RESPUESTA == 0)
@@ -95,7 +108,12 @@ int main ()
             }
             if(RX_DATA [0] == 'W' && RX_DATA [1] == 'R' && RX_DATA [2] == 'O' && RX_DATA [3] == 'N')
             {
-                AGUA = 1;
+                if(PERMISO_AGUA == 1)
+                {
+                    AGUA = 1;
+                    PERMISO_AGUA = 0;
+                    HABILITAR_AGUA.attach(&HABILITAR_WATER,D_ACTIVACION);
+                }
                 RADIO.setTransmitMode();
                 char RESPUESTA = 0;
                 while(RESPUESTA == 0)
@@ -180,4 +198,12 @@ void APAGAR_COMIDA (void)
 void APAGAR_AGUA (void)
 {
     C_A = 1;
+}
+void HABILITAR_FOOD (void)
+{
+    PERMISO_COMIDA = 1;
+}
+void HABILITAR_WATER (void)
+{
+    PERMISO_AGUA = 1;
 }
