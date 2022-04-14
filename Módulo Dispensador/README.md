@@ -1,17 +1,24 @@
 # Diseño Módulo Dispensador
 
-Este módulo está encargado de dispensar el alimento y el agua para la mascota. Para la comida se optó por utilizar un tornillo sin fin, cuya función es transportar la comida desde el depósito hasta la salida donde se ubicará el recipiente. Mientras que para el agua se optó por usar una motobomba para transportar el líquido desde el recipiente hasta la salida por medio de una manguera.
+![Módulo Dispensador](Imagenes/FOTO_DISPENSADOR.png)
 
+Este módulo está encargado de dispensar el alimento y el agua para la mascota. Para la comida se optó por utilizar un tornillo sin fin, cuya función es transportar la comida desde el depósito hasta la salida donde se ubicará el recipiente. Mientras que, para el agua se optó por usar una motobomba para transportar el líquido desde el recipiente (por medio de una manguera) hasta la salida.
 
-Para la activación eléctrica del motor DC (al que se encuentra acoplado el tornillo sin fin) y la motobomba se usó un puente H de dos canales, el cuál viene configurado con sus componentes externos en un PCB externo. Este circuito integrado permite activar las cargas con señales digitales comandadas por el microcontrolador según las órdenes recibidas desde Ubidots. 
+![Dispensador Comida](Imagenes/DISPENSADOR_COMIDA.png)
 
+![Dispensador Agua](Imagenes/DISPENSADOR_AGUA.png)
 
-Podemos observar que este módulo sólo requiere activar una serie de cargas en DC para la dispensación de comida y bebida, por lo cual, el microcontrolador se encarga de modificar dos buses digitales de 2 bits cada uno para el control del puente H, módulo que se encuentra separado del sistema diseñado.
+Para la activación eléctrica del motor DC y la motobomba DC, se usó un puente H de dos canales el cuál viene configurado con sus componentes externos en un PCB (revisar tabla de especificaciones técnicas del sistema). El puente H se utiliza como driver de corriente y por cada canal se utiliza en configuración de medio puente teniendo en cuenta que no se necesita inversión de giro; el control de velocidad solo tendrá 2 estados (encendido o apagado).
+
+![Conexiones con Módulo Puente H](Imagenes/DISPENSADOR_PUENTEH.png)
 
 ![Etapa de Control y Alimentación](Imagenes/CONTROL.png)
 
-En la figura X podemos observar cómo efectivamente el microcontrolador cuenta con el radio de comunicación para recibir las órdenes definidas desde Ubidots, y, además, posee 3 conectores clave para el uso del puente H externo, J4 que es una salida de limentación para el circuito integrado L298N, pues el módulo adquirido no posee regulador interno. Los conectores J3 y J5 están conectados al microcontrolador y son las señales de control para los dos canales del L298N y por lo tanto son quienes definen la activación o desactivación del motor acoplado al tornillo sin fin y/o la motobomba.
+En la figura se ilustra la conexión entre el microcontrolador y el puente H para el control de los dos actuadores. Además, se cuenta con 2 conectores (J3 y J5) de los cuales salen las señales para el control de cada canal en el driver de corriente.tornillo sin fin y/o la motobomba.
 
+![Conexiones generales módulo Dispensador](Imagenes/DISPENSADOR_GENERAL.png)
+
+![Prototipo Dispensador](Imagenes/DISPENSADOR.png)
 
 ## Código Completo Módulo Dispensador
 
@@ -25,6 +32,7 @@ En la figura X podemos observar cómo efectivamente el microcontrolador cuenta c
 
 #define D_COMIDA    10
 #define D_AGUA      5
+#define D_ACTIVACION 60
 
 #define MI_FREQ_MST 2400
 #define DIR_MAESTRO 0x000002   //DIRECCION DE RECEPCION DEL MAESTRO
@@ -50,6 +58,8 @@ BusOut  WATER(PA_11,PA_10);
 
 Timeout DETENER_C;
 Timeout DETENER_A;
+Timeout HABILITAR_COMIDA;
+Timeout HABILITAR_AGUA;
 
 void CONF_GENER (int FRECUENCIA, int POTENCIA, int VELOCIDAD, unsigned long long DIRECCION_RX, int TAMAÑO_D, int TUBERIA);
 void CONF_RADIO (unsigned long long DIRECCION_TX, int TAM_INFO);
@@ -58,6 +68,8 @@ void PREPARAR (int ANCHO, unsigned long long DIRECCION, int TAM_DIR, int RF);
 
 void APAGAR_COMIDA (void);
 void APAGAR_AGUA (void);
+void HABILITAR_FOOD (void);
+void HABILITAR_WATER (void);
 
 char RX_DATA [TAMANO];
 char CONFIRMAR [TAMANO] = {'D','F','O','N'};
@@ -68,6 +80,9 @@ char AGUA = 0;
 
 char C_D = 0;
 char C_A = 0;
+
+char PERMISO_COMIDA = 1;
+char PERMISO_AGUA = 1;
 
 int main ()
 {
@@ -92,7 +107,12 @@ int main ()
             RECIBIR();     
             if(RX_DATA [0] == 'F' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'N')
             {
-                COMIDA = 1;
+                if(PERMISO_COMIDA == 1)
+                {
+                    COMIDA = 1;
+                    PERMISO_COMIDA = 0;
+                    HABILITAR_COMIDA.attach(&HABILITAR_FOOD,D_ACTIVACION);
+                }
                 RADIO.setTransmitMode();
                 char RESPUESTA = 0;
                 while(RESPUESTA == 0)
@@ -113,7 +133,12 @@ int main ()
             }
             if(RX_DATA [0] == 'W' && RX_DATA [1] == 'R' && RX_DATA [2] == 'O' && RX_DATA [3] == 'N')
             {
-                AGUA = 1;
+                if(PERMISO_AGUA == 1)
+                {
+                    AGUA = 1;
+                    PERMISO_AGUA = 0;
+                    HABILITAR_AGUA.attach(&HABILITAR_WATER,D_ACTIVACION);
+                }
                 RADIO.setTransmitMode();
                 char RESPUESTA = 0;
                 while(RESPUESTA == 0)
@@ -199,11 +224,16 @@ void APAGAR_AGUA (void)
 {
     C_A = 1;
 }
+void HABILITAR_FOOD (void)
+{
+    PERMISO_COMIDA = 1;
+}
+void HABILITAR_WATER (void)
+{
+    PERMISO_AGUA = 1;
+}
 ```
 
 ## Diagrama de Flujo General Módulo Dispensador
 ![Diagrama General](Imagenes/DIAGRAMA_GENERAL.png)
 
-## Diagramas de Flujo Interrupciones Módulo Dispensador
-
-![Diagrama Interrupciones](Imagenes/INTERRUPCION_1.png)
