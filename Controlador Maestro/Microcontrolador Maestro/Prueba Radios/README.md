@@ -2,17 +2,45 @@
 
 El radio NRF24L01 está diseñado para trabajar en la banda de frecuencia ISM de 2,4GHz, adicionalmente, el fabricante indica que tiene 126 canales de frecuencia seleccionables, lo que se traduce en un rango de trabajo entre 2,4GHz y 2,515GHz. Tiene una potencia de transmisión de datos de 0,-6,-12 o -18dBm y una tasa de trasferencia de 250kbps, 1Mbps o 2Mbps.
 
-Para integrar el radio NRF24L01 y el microcontrolador, es necesario utilizar una librería  desarrollada por un miembro de la comunidad Mbed para dicho dispositivo y microcontrolador. Esta librería proporciona una serie de funciones facilitan la configuración y manipulación de los radios por parte del STM32.
+Para integrar el radio NRF24L01 y el microcontrolador, es necesario utilizar una librería ([nRF24L01](https://os.mbed.com/components/nRF24L01/))  desarrollada por un miembro de la comunidad Mbed para dicho dispositivo. Esta librería proporciona una serie de funciones que facilitan la configuración y manipulación de los radios por parte del STM32.
 
-Se realizó una prueba con un maestro transmisor y un esclavo receptor, donde el maestro envía repetidamente un mensaje a la dirección y frecuencia a las que se encuentra configurado el esclavo. Se espera que este último al recibir el mensaje lo envíe mediante el puerto serial del microcontrolador a un PC. El transmisor se ubicó en diferentes habitaciones del hogar, mientras que el receptor se posicionó en un segundo piso (punto medio a nivel del escenario usado) para que, al recibir el mensaje, este sea impreso en un terminal (Putty).
+## Descripción prueba de comunicación
 
-![Diagramas de flujo simplificados](Imagenes/DIAGRAMAS_SIMPLIFICADOS.png)
+Se realizó una prueba con un maestro transmisor y un esclavo receptor, donde el maestro envía repetidamente un mensaje a la dirección y frecuencia a las que se encuentra configurado el esclavo. Se espera que este último al recibir el mensaje lo envíe mediante el puerto serial del microcontrolador a un PC. 
+
+El transmisor se ubicó en diferentes habitaciones del hogar, mientras que el receptor se posicionó en un segundo piso (punto medio a nivel del escenario usado) para que, al recibir el mensaje, este sea impreso en un terminal (Putty).
+
+### Escenario bajo prueba:
+
+![PLANO PLANTA 1](Imagenes/PLANO_1.png)
+
+![PLANO PLANTA 2](Imagenes/PLANO_2.png)
+
+![PLANO PLANTA 3](Imagenes/PLANO_3.png)
+
+### Interpretación de Resultados:
+
+| Ubicación del Receptor | Ubicación del Transmisor | Distancia (m) | Tiempo Transcurrido para la recepción de datos | Color |
+| :---         |     :---:      |          ---: |          ---: |          ---: |
+| Segundo Piso | Primer Piso | 6 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Primer Piso | 10 | >15 Segundos | ![Diagramas de flujo simplificados](Imagenes/NARANJA.png) |
+| Segundo Piso | Primer Piso | 10| >15 Segundos | ![Diagramas de flujo simplificados](Imagenes/NARANJA.png) |
+| Segundo Piso | Primer Piso | 11 | >15 Segundos | ![Diagramas de flujo simplificados](Imagenes/NARANJA.png) |
+| Segundo Piso | Segundo Piso | 4 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Segundo Piso | 5 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Segundo Piso | 5 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Segundo Piso | 8 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Segundo Piso | 10 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Tercer Piso | 3 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Tercer Piso | 6 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
+| Segundo Piso | Tercer Piso | 12 | >15 Segundos | ![Diagramas de flujo simplificados](Imagenes/NARANJA.png) |
+
+
+### Diagramas de flujo simplificados
+
+![Diagramas de flujo simplificados](Imagenes/DIAGRAMA_MAESTRO_RECEPTOR.png)
 
 ## 1. Transmisión de Datos
-Se estima que el tamaño máximo para el arreglo de información que se enviará desde el microcontrolador maestro que se comunicará con la Raspberry pi será de 4 bytes (que es el mismo tamaño de información que se configuró en los distintos radios de comunicación para cada módulo de control), por lo cual se configuró la tasa de transferencia de 250kbps y una potencia de transmisión de 0dBm para lograr el mayor alcance posible.
-
-A continuación, se presenta el código usado para el maestro transmisor de la prueba.
-
  ```c
 //CODIGO DE PRUEBAS PARA DIRECCIONAMIENTO
 //DE RADIOS nRF24L01                                                       
@@ -37,6 +65,7 @@ A continuación, se presenta el código usado para el maestro transmisor de la p
 
 #define TAM_TX 4
 #define TAMANO 4
+
 
 nRF24L01P RADIO(PB_5, PB_4, PB_3, PA_15, PA_12);    // MOSI, MISO, SCK, CSN, CE, IRQ
 Serial PC (PA_2,PA_3);  //TX,RX
@@ -76,7 +105,20 @@ int main (void)
         TX_CONT = 0;
         RECIBO = 1;
         wait_ms (RETARDO);
- 
+        /*
+        PREPARAR (TAM_TX, DIR_2, TAM_R2, RF_RAD2);
+        DATA_TX[0] = 'H';
+        DATA_TX[1] = 'i';
+        DATA_TX[2] = 'R';
+        DATA_TX[3] = 'B';
+        PC.printf( "\n\r***********************\n\r");
+        PC.printf( "COMUNICANDO CON RADIO 2\n\r");
+        PC.printf( "***********************\n\r");
+        ESTADO_I ();
+        RADIO.write(NRF24L01P_PIPE_P0, DATA_TX, TAM_TX);
+        TX_CONT = 0;
+        RECIBO = 1;
+        wait_ms (RETARDO);*/
         if(RADIO.readable())
         {
             RECIBIR();
@@ -116,15 +158,9 @@ void RECIBIR (void)
     }
     PC.printf("\r\n");
 }
-
  ```
-### Diagrama de Flujo Maestro Transmisor
-
-![Diagrama de flujo Transmisor Maestro](Imagenes/DIAGRAMA_MAESTRO.png)
 
 ## 2. Recepción de Datos
-
-El microcontrolador esclavo por su parte, todo el tiempo aguarda a la espera de la recepción de información vía RF para almacenarla e imprimir el mensaje recibido vía puerto serie junto a un mensaje de confirmación de que se ha recibido información.
 
 ```c
 //CODIGO DE PRUEBAS PARA RECEPCION DE DATOS
@@ -201,9 +237,4 @@ void RECIBIR (void)
     }
     PC.printf("\r\n");
 }
-
 ```
-### Diagrama de Flujo Esclavo Receptor
-
-![Diagrama de flujo Transmisor Maestro](Imagenes/DIAGRAMA_RECEPTOR.png)
-

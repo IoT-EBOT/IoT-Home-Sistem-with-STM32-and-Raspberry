@@ -34,15 +34,32 @@ Teniendo en cuenta lo anterior, el controlador maestro implementado a partir de 
 
 - La SBC que enlaza las ordenes enviadas por el usuario en la nube con el sistema es la Raspberry Pi 4 de 2GB de RAM, a la cual se le instaló el sistema operativo [Raspbian](https://www.raspberrypi.com/software/).
 
-    ![RASPBERRY_PI_4](Imagenes/RASPBERRY_PI_4.jpg)
 
 - La tarjeta de desarrollo implementada en esta solución es la Blue Pill que incorpora un STM32F103C8, una CPU Cortex-M3 de 32-bits. La programación de dicha tarjeta se realizó mediante [Mbed Online Compiler](https://os.mbed.com/).
 
-    ![BLUE_PILL](Imagenes/BLUE_PILL.jpg)
 
 - El intercambio de información entre los diferentes módulos de control y un único controlador maestro se realizó implementando comunicación RF en la banda ISM mediante los radios de comunicación nRF24L01 con antena integrada. La librería usada en Mbed para integrar el radio con la Blue Pill fue [nRF24L01](https://os.mbed.com/components/nRF24L01/)
 
-    ![NRF24L01](Imagenes/NRF24L01.jpg)
+
+# Componentes principales de la solución
+
+| Componente | Aspecto Físico |
+| :---         |          ---: |
+| Raspberry Pi 4                | ![](Imagenes/RASPBERRY.png) |
+| Blue Pill                     | ![](Imagenes/BLUEPILL.png) |
+| Radio nRF24L01                | ![](Imagenes/RADIO.png) |
+| Cámara IP                     | ![](Imagenes/CAMARA.png) |
+| Motor DC                      | ![](Imagenes/MOTOR.png) |
+| Motobomba DC                  | ![](Imagenes/MOTOBOMBA.png) |
+| Módulo Puente H               | ![](Imagenes/PUENTEH.png) |
+| Conversor AC/DC               | ![](Imagenes/FUENTE.png) |
+| Regulador de Voltaje          | ![](Imagenes/78L33.png) |
+| Amplificador Operacional      | ![](Imagenes/358.png) |
+| Amplificador Operacional      | ![](Imagenes/TL084.png) |
+| Optoacoplador                 | ![](Imagenes/3021.png) |
+| Tiristor                      | ![](Imagenes/BT138.png) |
+| Transformador de Corriente    | ![](Imagenes/CURRENT_T.png) |
+| Contacto Magnético            | ![](Imagenes/SENSOR_PUERTA.png) |
 
 # Solución Final
 
