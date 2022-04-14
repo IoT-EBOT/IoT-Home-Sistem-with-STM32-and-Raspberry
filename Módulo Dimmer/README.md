@@ -1,23 +1,38 @@
 # Diseño Módulo Dimmer
 
+![Foto módulo Dimmer](Imagenes/FOTO_M_DIMMER.png)
+
 Para controlar el ángulo de disparo para cada semiciclo de la señal sinusoidal de la red doméstica (120V-60Hz para Colombia), es necesario identificar el instante de tiempo en el cual la señal tiene un valor de 0V, pues este punto será la referencia que tendremos para realizar los cálculos necesarios y realizar la activación de la etapa de potencia en el momento justo según la orden enviada desde Ubidots.
+
+![Carga al 30%](Imagenes/DIMMER_30.png)
+
+![Carga al 100%](Imagenes/DIMMER_100.png)
 
 ![Detector de Cruce por Cero](Imagenes/ZCD.png)
 
-La anterior figura describe el circuito de cruce por cero desarrollado, el cual está encargado de generar una señal cuadrada a la salida (SIGNALZCD), donde los flancos de subida y de baja coinciden con el punto exacto donde la señal de la red doméstica toma un valor de 0V.
+El circuito detector de cruce por cero desarrollado está encargado de generar una señal cuadrada a la salida (SIGNALZCD), donde los flancos de subida y de baja coinciden con el punto exacto donde la señal de la red doméstica toma un valor de 0V.
 
-En la entrada (Fin-Nin) es conectada la señal alterna de la red, esta pasa por una etapa de atenuación (R1-R2) y además cuenta con dos capacitores (C1-C2) que proporcionan aislamiento galvánico. La señal atenuada ingresa a un amplificador diferencial cuya función es acoplar la señal de la red al sistema, adicionar un voltaje de Offset a la señal (1.65V), y, además, por su funcionamiento natural actúa como filtro.
+En la entrada (Fin-Nin) es conectada la señal alterna de la red, esta pasa por una etapa de atenuación (R1-R3), además cuenta con dos capacitores (C1-C2) que proporcionan aislamiento galvánico. La señal atenuada ingresa a un amplificador diferencial cuya función es rechazar las señales en modo común provenientes de la red eléctrica y evitar que pasen al sistema; para que la señal en su salida esté montada sobre un nivel DC, la resistencia R3 se conecta a la referencia de 1.65V. Para que el sistema no tenga ganancia R1 es igual a R2, y R3 es igual a R4.
+
+![Señal de salida amplificador diferencial](Imagenes/SE%C3%91AL_AMP_DIF.png)
 
 La señal filtrada y sumada con un nivel DC es llevada a un amplificador operacional configurado como comparador con histéresis. El voltaje de referencia o comparación será el mismo voltaje de Offset adicionado a la señal en la etapa anterior, pues este nivel DC coincide con los instantes de tiempo donde la señal alterna cruza por cero. 
 
-La salida del comparador no puede ser conectada directamente al microcontrolador, pues el voltaje de alimentación del TL084 es de 5V DC y su voltaje de saturación tiende a acercarse a dicho valor, mientras que el STM32 soporta voltajes de hasta 3.3V en sus terminales de entrada. Esto nos lleva a conectar un transistor a la salida del comparador, con el fin de obtener la señal de salida (señal cuadrada de cruce por cero - SIGNALZCD) con valores de 3.3V para un valor ALTO y así evitar daños en el microcontrolador.
+![Curva comparador con histéresis](Imagenes/CURVA_HISTERESIS.png)
+
+![Señal de salida ZCD](Imagenes/SE%C3%91AL_ZCD.png)
+
+La salida del comparador no puede ser conectada directamente al microcontrolador, pues el voltaje de alimentación del TL084 es de 5V DC y su voltaje de saturación supera los 3.3V que es el umbral máximo de las entradas de la Blue Pill. Esto nos lleva a conectar un transistor a la salida del comparador, con el fin de obtener la señal de salida (señal cuadrada de cruce por cero - SIGNALZCD) con valores de 3.3V para un valor ALTO y así evitar daños en el microcontrolador.
 
 Una vez tratada la señal de la red doméstica para detectar el cruce por cero, el control de ángulo de disparo es determinado por el microcontrolador según el porcentaje definido por el usuario desde Ubidots, pues dicho porcentaje será el entregado a la carga tanto en el semiciclo positivo, como en el negativo.
 
-
 ![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
-En la anterior figura se observa que se adicionaron 2 conectores a los cuales irán conectados 3 botones capacitivos los cuales permiten variar el ciclo útil de la señal de disparo (aumentar o disminuir) o apagar directamente la carga.
+En la figura se observa que se adicionaron 2 conectores a los cuales irán conectados 3 botones capacitivos los cuales permiten variar el ciclo útil de la señal de disparo manualmente (aumentar o disminuir) o apagar directamente la carga. 
+
+![Señal de disparo 30%](Imagenes/DISPARO_30.png)
+
+![Señal de disparo 100%](Imagenes/DISPARO_100.png)
 
 ## Bloque de código para los calculos de tiempo en alto y bajo de la señal digital de disparo
 
@@ -40,35 +55,42 @@ if (CICLO_R == 1)
 }
 ```
 
-Primero, se descompone el vector de información recibida por RF desde el maestro para identificar el valor porcentual definido por el usuario. Posteriormente, dicho valor porcentual se multiplica por 83.33 y es almacenado en una variable denominada T_ALTO, pues si el porcentaje fuera igual a 100, el tiempo en alto (tiempo que debe estar activo el TRIAC) de la señal debería ser de 8333uS (tiempo de oscilación de semiciclo positivo y negativo). En otras palabras, el tiempo el alto de la señal corresponde a un valor porcentual definido por el usuario, y el tiempo en bajo (tiempo en el que el TRIAC debe estar inactivo) será igual al tiempo de oscilación menos el tiempo en alto calculado.
+Primero, se descompone el vector de información recibida por RF desde el maestro para identificar el valor porcentual definido por el usuario. Posteriormente, dicho valor porcentual se multiplica por 83.33 (que es el tiempo de cada semiciclo) y es almacenado en una variable denominada T_ALTO, pues si el porcentaje fuera igual a 100, el tiempo en alto (tiempo que debe estar activo el TRIAC) de la señal debería ser de 8333uS. En otras palabras, el tiempo en alto de la señal corresponde a un valor porcentual definido por el usuario, y el tiempo en bajo (el TRIAC se encuentra apagado) será igual al tiempo de oscilación menos el tiempo en alto calculado. Lo anterior aplica tanto para el semiciclo positivo como para el semiciclo negativo
 
-Es importante resaltar que desde Ubidots se cuenta con 101 pasos para la selección del porcentaje de potencia entregada a la carga (valores de 0 a 100), mientras que la configuración del ciclo útil mediante los botones capacitivos permite únicamente 11 pasos (aumenta o disminuye en 10% la potencia entregada a la carga).
+Es importante resaltar que desde Ubidots se cuenta con 101 pasos para la selección del porcentaje de potencia entregada a la carga (valores de 0 a 100), mientras que la configuración del ciclo útil mediante los botones capacitivos permite únicamente 11 pasos (cada paso aumenta o disminuye en 10% la potencia entregada a la carga).
+
 
 ## Bloque de Código para Evitar Desbordes en los Valores del Ciclo Útil
 ```c
 void FLANCOS (void)
 {
-        if(PORCENTAJE == 0)
-        {
-            DISPARO = 0;
-        }
-        else if(PORCENTAJE == 100)
-        {
-            DISPARO = 1;
-        }
-        else 
-        {
-            DISPARO = 0;
-            TM_OUT.attach_us(&DESACTIVAR,T_BAJO);
-        }    
+    if(PORCENTAJE == 0)
+    {
+        DISPARO = 0;
+    }
+    else if(PORCENTAJE == 100)
+    {
+        DISPARO = 1;
+    }
+    else 
+    {
+        DISPARO = 0;
+        TM_OUT.attach_us(&DESACTIVAR,T_BAJO);
+    }    
 }
 ```
 
 Posteriormente, el microcontrolador detecta cada flanco (tanto subida como bajada) de la señal de cruce por cero mediante una interrupción. Si el porcentaje de luminosidad determinado por el usuario es igual a 0, entonces se asegura que la señal de disparo del TRIAC se mantenga siempre en bajo, mientras que cuando dicho valor es igual a 100, se asegura que la etapa de potencia esté activa todo el tiempo. Cuando el valor del dimmer proporcionado por el usuario es diferente a 0 y 100, entonces, el microcontrolador asegura un valor lógico de 0 en la señal de disparo, y sólo activará la etapa de potencia una vez pasado el tiempo en bajo (T_BAJO) calculado. 
 
-Como resultado, la señal de DISPARO es una señal cuadrada, de 120 Hz, alineada a la derecha, y cuyo ciclo útil corresponde al definido por el usuario.
+![Funcionamiento Dimmer controaldo desde Ubidots](Imagenes/DIMMER_UBIDOTS.png)
 
-La etapa de potencia está compuesta por un optoacoplador con salida de TRIAC sin circuito de detección de cruce por cero (para un control arbitrario del TRIAC), un BT138 para cargas de máximo 12A.Al TRIAC de potencia se le adicionó una red Snubber para evitar falsos disparos en el gatillo y se provee la inclusión de otra red Snubber para cargas inductivas (R14 - C6).
+Como resultado, la señal de DISPARO es una señal cuadrada, de 120 Hz, alineada a la derecha, y cuyo ciclo útil es proporcional al valor definido en el dashboard por el usuario.
+
+La etapa de potencia está compuesta por un optoacoplador con salida de TRIAC sin circuito de detección de cruce por cero (para un control arbitrario del TRIAC) junto a un BT138 capaz de soportar cargas de máximo 12A. Al TRIAC se le adicionó una red Snubber para evitar falsos disparos en gate y se provee la inclusión de otra red Snubber para cargas inductivas (R14 - C6).
+
+![Señal entregada a la carga al 30%](Imagenes/CARGA_30.png)
+
+![Señal entregada a la carga al 50%](Imagenes/CARGA_50.png)
 
 ![Detector de Cruce por Cero](Imagenes/POTENCIA.png)
 
@@ -124,6 +146,8 @@ void AUMENTAR (void);
 void DISMINUIR (void);
 void OFF_DIMM (void);
 
+int INTENTOS = 0;
+
 char RX_DATA [TAMANO];
 char TX_DATA [TAMANO];
 char CU_DATA [TAMANO];
@@ -164,6 +188,8 @@ int main ()
     F_SUBIR.rise(&AUMENTAR);
     F_BAJAR.rise(&DISMINUIR);
     F_APAGAR.rise(&OFF_DIMM);
+
+    ENVIARC();
     
     while (1)
     {
@@ -302,8 +328,6 @@ void DESACTIVAR (void)
 }
 void ENVIARC (void)
 {
-    int INTENTOS = 0;
-    
     TX_DATA [0] = ((CENTENAS / 100) + 48);
     TX_DATA [1] = ((DECENAS / 10) + 48);
     TX_DATA [2] = UNIDADES + 48;
@@ -418,17 +442,5 @@ void OFF_DIMM (void)
     }
 }
 ```
-
-## Diagrama de Flujo General Módulo Dimmer
+## Diagrama de Flujo
 ![Detector de Cruce por Cero](Imagenes/DIAGRAMA_GENERAL.png)
-
-## Diagramas de Flujo Interrupciones Módulo Dimmer
-
-![Detector de Cruce por Cero](Imagenes/INTERRUPCION_1.png)
-
-![Detector de Cruce por Cero](Imagenes/INTERRUPCION_2.png)
-
-![Detector de Cruce por Cero](Imagenes/INTERRUPCION_3.png)
-
-![Detector de Cruce por Cero](Imagenes/INTERRUPCION_4.png)
-
