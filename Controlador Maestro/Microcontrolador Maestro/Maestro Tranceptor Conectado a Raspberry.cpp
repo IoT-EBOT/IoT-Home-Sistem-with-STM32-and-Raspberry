@@ -78,7 +78,7 @@ char WATE_ON [TAM_TX] = {'W','R','O','N'};
 char CONF_COR [TAM_TX] = {'A','M','P','R'};
 char TOMA_SI [TAM_TX] = {'L','D','O','N'};
 char TOMA_NO [TAM_TX] = {'L','D','O','F'};
-char TOMA_I_R [TAM_TX] = {'T','E','I','R'};
+char TOMA_IR [TAM_TX] = {'T','E','I','R'};
 char CAMARA_OK [TAM_TX] = {'S','G','Y','E'};
 
 int CENTENAS = 0;
@@ -733,16 +733,12 @@ void ENVIAR_ALERTAS (void)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
-        RADIO.write(NRF24L01P_PIPE_P0, TOMA_I_R, TAM_TX);
+        RADIO.write(NRF24L01P_PIPE_P0, TOMA_IR, TAM_TX);
         PC.printf("SE RESPONDIO \r\n");
         RADIO.setRfFrequency(MI_FREQ);
         RADIO.setReceiveMode();
         wait_ms(250);
-        for(int i = 0; i<TAM_TX; i++)
-        {
-            PC.printf("%c",CONF_COR[i]);
-        }
-        PC.printf("\r\n");
+        PC.printf("%s \r\n",TOMA_IR);
         E_COR_I = 1;
     }
 }

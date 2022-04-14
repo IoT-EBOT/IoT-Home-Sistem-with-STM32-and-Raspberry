@@ -1,20 +1,30 @@
 # Diseño Controlador Maestro
 
-Si bien la SBC tiene la capacidad de enviar y recibir información desde Ubidots, es necesario implementar un radio NRF24L01 a este dispositivo, pues dicho radio es el medio de comunicación de la presente solución. La Raspberry pi cuenta con una interfaz de comunicación SPI, por lo que la conexión con el radio podría ser directa, sin embargo, para facilitar el desarrollo del controlador maestro se decide habilitar el puerto serie de la Raspberry pi para comunicación Serial comandada por un programa Python (revisar [Habilitar Puerto Serie Raspberryt Pi](https://github.com/IoT-EBOT/IoT-Home-Sistem-with-STM32-and-Raspberry/tree/main/Controlador%20Maestro/Raspberry%20Pi/Configuracion%20Puerto%20Serie%20Raspberry%20Pi)), y así tener un microcontrolador encargado de enviar y recibir la información del sistema mediante el radio, y la SBC opera como puente entre el sistema e Internet.
+![Módulo Controlador Maestro](Imagenes/FOTO_CONTROLADOR_MAESTRO.png)
+
+![Controlador Maestro y Raspberry](Imagenes/FOTO_CONTROLADOR_RASPBERRY.png)
+
+Si bien la SBC tiene la capacidad de enviar y recibir información desde y hacia Ubidots, es necesario implementar un radio NRF24L01 con un microcontrolador como etapa previa entre la Raspberry y los módulos de control. La Raspberry Pi cuenta con una interfaz de comunicación SPI, por lo que la conexión con el radio podría ser directa, sin embargo, para facilitar el desarrollo del controlador maestro, se decide [habilitar Puerto Serie de la Raspberry Pi](https://github.com/IoT-EBOT/IoT-Home-Sistem-with-STM32-and-Raspberry/tree/main/Controlador%20Maestro/Raspberry%20Pi/Configuracion%20Puerto%20Serie%20Raspberry%20Pi). De esta forma la etapa del microcontrolador y el radio conforman una etapa que puede modelarse como un buffer, el cual evitará pérdida de datos teniendo en cuenta que el sistema operativo que corre la Raspberry no es un sistema en tiempo real. Por otra parte, ya existen librerías que facilitan el desarrollo de la comunicación entre los radios y el microcontrolador.
 
 ![ESQUEMÁTICO](Imagenes/ESQUEMATICO.png)
 
-
-Por lo tanto, el módulo del maestro transceptor cuenta con un conector GPIO macho de 40 pines (J1) que permite la comunicación serial entre la Raspberry pi y el microcontrolador, y, además, proporciona la alimentación necesaria para los componentes de la PCB (microcontrolador y radio). Se adicionó un led que permite reconocer si el programa se está ejecutando en la Raspberry Pi.
+Por lo tanto, el módulo del controlador maestro cuenta con un conector GPIO macho de 40 pines (J1) que permite la comunicación serial entre la Raspberry pi y el microcontrolador, y además, proporciona la alimentación necesaria para los componentes de la PCB (microcontrolador y radio). Se adicionó un led que permite reconocer si el programa se está ejecutando en la Raspberry Pi, y unos filtros pasivos (condensadores) para intentar minimizar el ripple en la salidas de 3.3V y 5V.
 
 ## Código Python Controlador Mestro (Raspberry Pi 4)
 ```python
 # -------------------------------------------------LIBRERIAS USADAS------------------------------------------
 
+from ast import Try
 import requests
 import serial
 import time
 import os
+
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email.encoders import encode_base64
 
 # -------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
 
@@ -34,7 +44,7 @@ AGUA = "dispensador_agua"                       # VARIABLE: Control para activac
 CORRIENTE = "sen_cor"                           # VARIABLE: Valor de corriente sensada
 TOMA_CORRIENTE = "toma_cor"                     # VARIABLE: On/off para toma corriente
 
-# -------------Variables locales usadas para almacenar lo valores rescatados y a enviar a Ubidots----------
+# -------------Variables locales usadas para almacenar los valores rescatados y a enviar a Ubidots----------
 
 DIMMER = 0
 INTERRUP = 0
@@ -107,17 +117,47 @@ def OBTENER_DATO(device, variable):
     except:
         pass
 
+ 
+
 # -----------FUNCION PARA ATENDER ALERTAS INTERNAS Y EXTERNAS DERIVADAS DE LA COMUNICACION CON EL MICROCONTROLADOR-----------
 
 def LEER_MICRO():
     #
+    global DIMMER
+    global INTERRUP
+    global DISP_COMIDA
+    global DISP_AGUA 
+    global CURRENT 
+    global TOMA
+
+    global TEMP_CICLO 
+    global TEMP_INTERRUPTOR
+    global TEMP_COMIDA
+    global TEMP_AGUA
+    global TEMP_CORRIENTE 
+    global TEMP_TOMACORRIENTE 
+
+    global ESPERAR_1 
+    global ESPERAR_2 
+    global ESPERAR_3 
+    global ESPERAR_4 
+    global ESPERAR_5 
+    global ESPERAR_6 
+
     if SERIAL.readable() == True:
         LEER = SERIAL.read()
         if LEER != bytes(''.encode()):
             print(LEER)
+            # ------CAMARA--------
+            if LEER == bytes('P'.encode()):
+                print('PUERTA SE ABRIO')
+                temp = 'T'
+                SERIAL.write(temp.encode())
+                os.system('python3 CAPTURA_CAMARA.py')  #Llama programa de captura de video y envio por correo electronico                
+                print('GRABACION Y ENVIO COMPLETADO')
             #-------------------------------------ALERTAS EXTERNAS (ALERTAS PROBOCADAS POR MENSAJES ENVIADOS DESDE LOS MÓDULOS DE CONTROL)------------------------------------
             if LEER == bytes('C'.encode()):
-                print("EL MAESTRO TIENE UN CILO PARA ENVIARME")
+                print('EL MAESTRO TIENE UN CILO PARA ENVIARME')
                 temp = 'C'
                 SERIAL.write(temp.encode())
                 CICLO = 0
@@ -125,7 +165,8 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         DUTY = SERIAL.readline()
-                        print("El ciclo recibido es: " + str(DUTY) + "   " + str(type(DUTY)))
+                        
+                        print('El ciclo recibido es: ' + str(DUTY) + '    ' + str(type(DUTY)))
                         CICLO = 1
                         temp = 'c'
                         SERIAL.write(temp.encode())
@@ -141,7 +182,7 @@ def LEER_MICRO():
                             DIMMER = TEMP_CICLO = float(DUTY)
             # ------SENSOR--------
             if LEER == bytes('Z'.encode()):
-                print("EL MAESTRO TIENE UNA CORRIENTE PARA ENVIAR")
+                print('EL MAESTRO TIENE UNA CORRIENTE PARA ENVIAR')
                 temp = 'Z'
                 SERIAL.write(temp.encode())
                 COR = 0
@@ -149,21 +190,21 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         corriente = SERIAL.readline()
-                        print("LA CORRIENTE RECIBIDA ES : " + str(corriente) + "   " + str(type(corriente)))
+                        
+                        print('LA CORRIENTE RECIBIDA ES : ' + str(corriente) + '   ' + str(type(corriente)))
                         COR = 1
                         temp = 'z'
                         SERIAL.write(temp.encode())
                         COR_ENV = float(corriente)
                         COR_ENV = COR_ENV / 100
-                        print("LA CORRIENTE EN MEMORIA ES: " + str(COR_ENV) + "   " + str(type(COR_ENV)))
+                        print('LA CORRIENTE EN MEMORIA ES: ' + str(COR_ENV) + '   ' + str(type(COR_ENV)))
                         ENVIAR_DATO(CORRIENTE, COR_ENV)
-            # ------CAMARA--------
-            if LEER == bytes('P'.encode()):
-                print("PUERTA SE ABRIO")
-                temp = 'T'
+                        
+            if LEER == bytes('Q'.encode()):
+                temp = 'Q'
                 SERIAL.write(temp.encode())
-                os.system('python3 CAPTURA_CAMARA.py')  #Llama programa de captura de video y envio por correo electronico                
-                print("GRABACION Y ENVIO COMPLETADO ")
+                ENVIAR_DATO(TOMA_CORRIENTE, 1.0)
+                TOMA = TEMP_TOMACORRIENTE = 1.0
             #-------------------------------------ALERTAS ESPERADAS (ALERTAS GENERADAS EN RESPUESTAS A PETICIONES GENERADAS POR RASPBERRY)------------------------------------
             
             if LEER == bytes('U'.encode()):  # EL MICRO ESTA LISTO PARA RECIBIR EL CICLO UTIL
@@ -178,7 +219,7 @@ def LEER_MICRO():
                         if LEER != bytes(''.encode()):
                             print(LEER)
                             if LEER == bytes('R'.encode()):
-                                print("DIMMER RECIBIO Y SETEO SU CICLO UTIL")
+                                print('DIMMER RECIBIO Y SETEO SU CICLO UTIL')
                                 RESPUESTA_1 = 1
                                 ESPERAR_1 = 0
 
@@ -214,101 +255,133 @@ if name == 'main':
     TEMP_CORRIENTE = OBTENER_DATO(DEVICE_LABEL, CORRIENTE)
     TEMP_TOMACORRIENTE = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
 
-    print("ESTADO INICIAL CICLO UTIL: " + str(TEMP_CICLO))
-    print("ESTADO INICIAL INTERRUPTO: " + str(TEMP_INTERRUPTOR))
-    print("ESTADO INICIAL DIS_COMIDA: " + str(TEMP_COMIDA))
-    print("ESTADO INICIAL DISPE_AGUA: " + str(TEMP_AGUA))
-    print("ESTADO INICIAL  CORRIENTE: " + str(TEMP_CORRIENTE))
-    print("ESTADO INICIAL TOMA_CORRI: " + str(TEMP_TOMACORRIENTE))
+    print('ESTADO INICIAL CICLO UTIL: ' + str(TEMP_CICLO))
+    print('ESTADO INICIAL INTERRUPTO: ' + str(TEMP_INTERRUPTOR))
+    print('ESTADO INICIAL DIS_COMIDA: ' + str(TEMP_COMIDA))
+    print('ESTADO INICIAL DISPE_AGUA: ' + str(TEMP_AGUA))
+    print('ESTADO INICIAL  CORRIENTE: ' + str(TEMP_CORRIENTE))
+    print('ESTADO INICIAL TOMA_CORRI: ' + str(TEMP_TOMACORRIENTE))
 
     while (True):
 
-        #-------------------------------------------------------------------------RECUPERAR DATOS DESDE UBIDOTS--------------------------------------------------------
+        try:
+            #-------------------------------------------------------------------------RECUPERAR DATOS DESDE UBIDOTS--------------------------------------------------------
 
-        DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
-        INTERRUP = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
-        DISP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
-        DISP_AGUA = OBTENER_DATO(DEVICE_LABEL, AGUA)
-        TOMA = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
+            DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
+            INTERRUP = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
+            DISP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
+            DISP_AGUA = OBTENER_DATO(DEVICE_LABEL, AGUA)
+            TOMA = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
 
-        #----------------------------------------REVISAR SI EL MICROCONTROLADOR TIENE ALGUNA ALERTA PARA RASPBERRY Y/O UBIDOTS----------------------------------------
+            #----------------------------------------REVISAR SI EL MICROCONTROLADOR TIENE ALGUNA ALERTA PARA RASPBERRY Y/O UBIDOTS----------------------------------------
 
-        LEER_MICRO ()
+            LEER_MICRO ()
 
-        #--------------COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALMACENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION--------------
+            #--------------COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALMACENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION--------------
 
-        if INTERRUP != TEMP_INTERRUPTOR:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
-            print("El interruptor cambio")
-            TEMP_INTERRUPTOR = INTERRUP
-            if INTERRUP == 1.0:
-                print("Interruptor Activado")
+            if INTERRUP != TEMP_INTERRUPTOR:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
+                print('El interruptor cambio')
+                TEMP_INTERRUPTOR = INTERRUP
+                if INTERRUP == 1.0:
+                    print('Interruptor Activado')
+                    TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
+                    LEER_MICRO()
+                    temp = 'B'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_1 = 1
+                    while ESPERAR_1 == 1:
+                        LEER_MICRO()
+
+                if INTERRUP == 0.0:
+                    ENVIAR_DATO(CICLO_UTIL, 0)
+                    print('Interruptor Desactivado')
+                    LEER_MICRO()
+                    temp = 'I'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_2 = 1
+                    while ESPERAR_2 == 1:
+                        LEER_MICRO()
+                                
+                                
+            if DIMMER != TEMP_CICLO and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
+                print('El dimmer cambio')
                 TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
-                temp = 'B'
+                LEER_MICRO()
+                temp = 'A'
                 SERIAL.write(temp.encode())
                 ESPERAR_1 = 1
                 while ESPERAR_1 == 1:
                     LEER_MICRO()
 
-            if INTERRUP == 0.0:
-                ENVIAR_DATO(CICLO_UTIL, 0)
-                print("Interruptor Desactivado")
-                temp = 'I'
+
+            if DISP_COMIDA != TEMP_COMIDA:  
+                print('La comida cambio')
+                TEMP_COMIDA = DISP_COMIDA
+                LEER_MICRO()
+                temp = 'D'
                 SERIAL.write(temp.encode())
-                ESPERAR_2 = 1
-                while ESPERAR_2 == 1:
+                ESPERAR_3 = 1
+                while ESPERAR_3 == 1:
                     LEER_MICRO()
-                            
-                            
-        if DIMMER != TEMP_CICLO and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
-            print("El dimmer cambio")
-            TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
-            temp = 'A'
-            SERIAL.write(temp.encode())
-            ESPERAR_1 = 1
-            while ESPERAR_1 == 1:
+
+
+            if DISP_AGUA != TEMP_AGUA:  
+                print('El agua cambio')
+                TEMP_AGUA = DISP_AGUA
                 LEER_MICRO()
-
-
-        if DISP_COMIDA != TEMP_COMIDA:  
-            print("La comida cambio")
-            TEMP_COMIDA = DISP_COMIDA
-            temp = 'D'
-            SERIAL.write(temp.encode())
-            ESPERAR_3 = 1
-            while ESPERAR_3 == 1:
-                LEER_MICRO()
-
-
-        if DISP_AGUA != TEMP_AGUA:  
-            print("El agua cambio")
-            TEMP_AGUA = DISP_AGUA
-            temp = 'E'
-            SERIAL.write(temp.encode())
-            ESPERAR_4 = 1
-            while ESPERAR_4 == 1:
-                LEER_MICRO()
-                        
-
-        if TOMA != TEMP_TOMACORRIENTE:
-            print("La toma cambio cambio")
-            TEMP_TOMACORRIENTE = TOMA
-
-            if TOMA == 1:
-                temp = 'F'
+                temp = 'E'
                 SERIAL.write(temp.encode())
-                ESPERAR_5 = 1
-                while ESPERAR_5 == 1:
+                ESPERAR_4 = 1
+                while ESPERAR_4 == 1:
                     LEER_MICRO()
                             
 
-            elif TOMA == 0:
-                temp = 'G'
-                SERIAL.write(temp.encode())
-                ESPERAR_6 = 1
-                while ESPERAR_6 == 1:
+            if TOMA != TEMP_TOMACORRIENTE:
+                print('La toma cambio cambio')
+                TEMP_TOMACORRIENTE = TOMA
+
+                if TOMA == 1:
                     LEER_MICRO()
-                                    
-        print("el bucle está operando")
+                    temp = 'F'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_5 = 1
+                    while ESPERAR_5 == 1:
+                        LEER_MICRO()
+                                
+
+                elif TOMA == 0:
+                    LEER_MICRO()
+                    temp = 'G'
+                    SERIAL.write(temp.encode())
+                    ESPERAR_6 = 1
+                    while ESPERAR_6 == 1:
+                        LEER_MICRO()
+                                        
+            print('Ejecutando...')
+
+        except:
+            print('ERROR DETECTADO')
+            CORREO_DESTINO = 'dgomezbernal24@gmail.com'
+            CORREO_DESTINO_2 = 'cristiancobos2002@gmail.com'
+            CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
+            PASSWORD = 'E-BOT2021' 
+            smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
+            msg = MIMEMultipart()
+
+            msg['To'] = CORREO_DESTINO
+            msg['To'] = CORREO_DESTINO_2
+            msg['From'] = CORREO_MAESTRO
+            msg['Subject'] = 'ERROR DETECTADO'
+            msg.attach(MIMEText('ERROR EN EL MODULO MAESTRO DERECTADO '))
+
+            server = smtplib.SMTP(smtp_server)
+            server.starttls()
+            server.login(CORREO_MAESTRO, PASSWORD)
+            server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
+            server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
+            print("ALERTA DE ERROR ENVIADA ")
+            server.quit()
+            
 ```
 
 ![DIAGRAMA DE FLUJO MAESTRO PYTHON](Imagenes/D_F_PYTHON.png)
@@ -365,7 +438,7 @@ nRF24L01P RADIO(PB_5, PB_4, PB_3, PA_15, PA_12);    // MOSI, MISO, SCK, CSN, CE,
 Serial RASPBERRY(PA_9,PA_10);  //TX,RX
 Serial PC(PA_2,PA_3);  //TX,RX
 DigitalOut ON(PC_13);
-
+Timeout ESPERAR_T_CAMARA;
 //------------------------------------------------------------------------ DEFINICION DE FUNCIONES ---------------------------------------------------------------
 
 void CONF_INIC (int FRECUENCIA, int POTENCIA, int VELOCIDAD, unsigned long long DIRECCION, int ANCHO, int TUBERIA);
@@ -375,6 +448,7 @@ void RECIBIR (void);
 void ENVIAR_CICLO (void);
 void LEER_RASPBERRY (void);
 void ENVIAR_ALERTAS (void);
+void HABILITAR_RECP_CAMARA (void);
 
 //------------------------------------------------------------------------ VARIABLES GLOBALES ---------------------------------------------------------------
 
@@ -395,17 +469,20 @@ char WATE_ON [TAM_TX] = {'W','R','O','N'};
 char CONF_COR [TAM_TX] = {'A','M','P','R'};
 char TOMA_SI [TAM_TX] = {'L','D','O','N'};
 char TOMA_NO [TAM_TX] = {'L','D','O','F'};
+char TOMA_IR [TAM_TX] = {'T','E','I','R'};
 char CAMARA_OK [TAM_TX] = {'S','G','Y','E'};
 
 int CENTENAS = 0;
 int DECENAS = 0;
 int UNIDADES = 0;
-int PORCENTAJE = 0;
+int PORCENTAJE = 101;
+int PORCENTAJE_T = 0;
 
 int DECIMAL  = 0;
 int UNIDAD_1 = 0;
 int UNIDAD_2 = 0;
-float VALOR_COR = 0.0;
+float VALOR_COR = 100.0;
+float VALOR_COR_T = 0.0;
 
 char FG_COMIDA = 0;
 char FG_AGUA = 0;
@@ -417,6 +494,9 @@ char LETRA = ' ';
 char E_CICLO = 1;
 char E_COR = 1; 
 char E_CAMARA = 1;
+char E_COR_I = 1;
+
+char PERMISO_CAMARA = 1;
 
 char ERF_CICLO = 1;
 char ERF_INTERRUP_OFF = 1;
@@ -428,6 +508,15 @@ char ERF_TOMA_OFF = 1;
 char CRF_CAMARA = 1;
 char CRF_DIMMER = 1;
 char CRF_CORRIENTE = 1;
+
+char ERF_CICLO_C = 0;
+char ERF_INTERRUP_OFF_C = 0;
+char ERF_COMIDA_C = 0;
+char ERF_AGUA_C = 0;
+char ERF_TOMA_ON_C = 0;
+char ERF_TOMA_OFF_C = 0;
+
+char TOMA_C = 0;
 
 int main (void)
 {
@@ -499,6 +588,7 @@ int main (void)
             ERF_TOMA_ON = 0;
             ENVIAR_ALERTAS();
             TOMA_ON = 0;
+            TOMA_C = 1;
         }    
         if(TOMA_OFF == 1)
         {
@@ -508,6 +598,7 @@ int main (void)
             ERF_TOMA_OFF = 0;
             ENVIAR_ALERTAS();
             TOMA_OFF = 0;
+            TOMA_C = 0;
         } 
 
         //---------------------------------------------------------------------- REVISAR SI EL RADIO RECIBIÓ ALERTAS --------------------------------------------------------------
@@ -519,10 +610,20 @@ int main (void)
             //------------------------------------------------------------ ALERTAS ESPERADAS DESDE CAMARA, DIMMER Y SENSOR DE CORRIENTE ------------------------------------------------
             if(RX_DATA[0] == 'S' && RX_DATA[1] == 'P' && RX_DATA[2] == 'A' && RX_DATA[3] == 'D')
             {
-                PC.printf("LA PUERTA SE ABRIO\r\n"); 
-                RASPBERRY.putc('P');  
-                CRF_CAMARA = 0;
-                ENVIAR_ALERTAS();
+                if(PERMISO_CAMARA == 1)
+                {
+                    PC.printf("LA PUERTA SE ABRIO\r\n"); 
+                    RASPBERRY.putc('P');  
+                    CRF_CAMARA = 0;
+                    ENVIAR_ALERTAS();
+                    PERMISO_CAMARA = 0;
+                    ESPERAR_T_CAMARA.attach(&HABILITAR_RECP_CAMARA,60);
+                }
+                else if(PERMISO_CAMARA == 0)
+                {
+                    PC.printf("LA PUERTA SE ABRIO\r\n");
+                    CRF_CAMARA = 0;
+                }
             }
                    
             if(RX_DATA [3] == 'C')
@@ -533,16 +634,24 @@ int main (void)
                 CENTENAS = (RX_DATA [0] - 48) * 100;
                 DECENAS = (RX_DATA [1] - 48) * 10;
                 UNIDADES = (RX_DATA [2] - 48);
-                PORCENTAJE = CENTENAS + DECENAS + UNIDADES;
+                PORCENTAJE_T = CENTENAS + DECENAS + UNIDADES;
                
-                PC.printf("%d %d %d %d \r\n",CENTENAS,DECENAS,UNIDADES, PORCENTAJE);
-                 
-                RASPBERRY.putc('C');
-                E_CICLO = 0;
-                while (E_CICLO == 0)
-                {
+               if(PORCENTAJE_T != PORCENTAJE && PORCENTAJE_T >= 0 && PORCENTAJE_T <= 100)
+               {
+                    PORCENTAJE = PORCENTAJE_T;
+                    RASPBERRY.putc('C');
+                    E_CICLO = 0;
+                    /*while (E_CICLO == 0)    //REVISAR
+                    {
+                        LEER_RASPBERRY();
+                    }*/
                     LEER_RASPBERRY();
-                }
+               }
+               else
+               {
+                   PC.printf("%d %d %d %d \r\n",CENTENAS,DECENAS,UNIDADES, PORCENTAJE);
+               }
+                
             }
             if(RX_DATA [3] == 'Z')
             {
@@ -553,15 +662,35 @@ int main (void)
                 UNIDAD_1 = (RX_DATA [1] - 48) *10;
                 UNIDAD_2 = (RX_DATA [2] - 48);  
                 
-                VALOR_COR = DECIMAL + UNIDAD_1 + UNIDAD_2;
-                              
-                PC.printf("%f \r\n",VALOR_COR);                                  
-                RASPBERRY.putc('Z');
-   
-                E_COR = 0;                                                  
-                while (E_COR == 0)
+                VALOR_COR_T = DECIMAL + UNIDAD_1 + UNIDAD_2;
+                                                               
+                if(VALOR_COR_T != VALOR_COR && VALOR_COR_T >= 0.0 && VALOR_COR_T <= 500.0)
                 {
+                    VALOR_COR = VALOR_COR_T;
+                    RASPBERRY.putc('Z');
+                    E_COR = 0;                                                  
+                    /*while (E_COR == 0)
+                    {
+                        LEER_RASPBERRY();
+                    }*/
                     LEER_RASPBERRY();
+                }
+                else
+                {
+                    PC.printf("%f,%f\r\n",VALOR_COR_T,VALOR_COR); 
+                }
+            }
+            if(RX_DATA[0] == 'T' && RX_DATA[1] == 'I' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
+            {
+                if (TOMA_C == 0)
+                {
+                    RASPBERRY.putc('Q');
+                    E_COR_I = 0;
+                    TOMA_C = 1;
+                }
+                else
+                {
+                    E_COR_I = 0;
                 }
             }
             //------------------------------------------------------------ CONFIRMACIONES DE RECEPCION DE ALERTAS ------------------------------------------------
@@ -569,31 +698,37 @@ int main (void)
             if(RX_DATA[0] == 'U' && RX_DATA[1] == 'U' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
             {
                 ERF_CICLO = 1;
+                ERF_CICLO_C = 0;
             }
 
             if(RX_DATA[0] == 'O' && RX_DATA[1] == 'O' && RX_DATA[2] == 'U' && RX_DATA[3] == 'U')
             {
                 ERF_INTERRUP_OFF = 1;
+                ERF_INTERRUP_OFF_C = 0;
             }    
 
             if(RX_DATA[0] == 'D' && RX_DATA[1] == 'F' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
             {
                 ERF_COMIDA = 1;
+                ERF_COMIDA_C = 0;
             }    
 
             if(RX_DATA[0] == 'D' && RX_DATA[1] == 'A' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
             {
                 ERF_AGUA = 1;
+                ERF_AGUA_C = 0;
             }    
 
             if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'N')
             {
                 ERF_TOMA_ON = 1;
+                ERF_TOMA_ON_C = 0;
             }    
 
             if(RX_DATA[0] == 'T' && RX_DATA[1] == 'M' && RX_DATA[2] == 'O' && RX_DATA[3] == 'F')
             {
                 ERF_TOMA_OFF = 1;
+                ERF_TOMA_OFF_C = 0;
             }    
 
         }
@@ -751,7 +886,11 @@ void LEER_RASPBERRY (void)
                 E_CAMARA = 1;
                 break;
             }
-                
+            case 'Q':
+            {
+                E_COR_I = 1;
+                break;
+            }
         }    
     }
 }
@@ -759,7 +898,7 @@ void LEER_RASPBERRY (void)
 void ENVIAR_ALERTAS (void)
 {
     //--------------------------------------------------------------------ENVIAR CICLO ÚTIL AL DIMMER------------------------------------------------------------
-    if (ERF_CICLO == 0)
+    if (ERF_CICLO == 0 && ERF_CICLO_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
@@ -777,10 +916,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_CICLO = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_CICLO_C = 0;
             }
         }
+        ERF_CICLO_C = ERF_CICLO_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_CICLO_C);
     }
-    if(ERF_INTERRUP_OFF == 0)
+    else if(ERF_CICLO == 0 && ERF_CICLO_C > 20)
+    {
+        ERF_CICLO_C = 0;
+        ERF_CICLO = 1;
+    }
+    if(ERF_INTERRUP_OFF == 0 && ERF_INTERRUP_OFF_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DIMMER, TAM_DIRECCIONES, RF_DIMMER);
@@ -798,10 +945,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_INTERRUP_OFF = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_INTERRUP_OFF_C = 0;
             }    
         }
+        ERF_INTERRUP_OFF_C = ERF_INTERRUP_OFF_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_INTERRUP_OFF_C);
     }
-    if(ERF_COMIDA == 0)
+    else if(ERF_INTERRUP_OFF == 0 && ERF_INTERRUP_OFF_C > 20)
+    {
+        ERF_INTERRUP_OFF_C = 0;
+        ERF_INTERRUP_OFF = 1;
+    }
+    if(ERF_COMIDA == 0 && ERF_COMIDA_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
@@ -819,10 +974,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_COMIDA = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_COMIDA_C = 0;
             }    
-        }    
+        }
+        ERF_COMIDA_C = ERF_COMIDA_C + 1;    
+        PC.printf("CONTADOR = %i \r\n",ERF_COMIDA_C);
     }
-    if(ERF_AGUA == 0)
+    else if(ERF_COMIDA == 0 && ERF_COMIDA_C > 20)
+    {
+        ERF_COMIDA_C = 0;
+        ERF_COMIDA = 1;
+    }
+    if(ERF_AGUA == 0 && ERF_AGUA_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_DISPENSADOR, TAM_DIRECCIONES, RF_DISPENSADOR);
@@ -840,10 +1003,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_AGUA = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_AGUA_C = 0;
             }    
-        }    
+        } 
+        ERF_AGUA_C = ERF_AGUA_C + 1;   
+        PC.printf("CONTADOR = %i \r\n",ERF_COMIDA_C);
     }
-    if (ERF_TOMA_ON == 0)
+    else if(ERF_AGUA == 0 && ERF_AGUA_C > 20)
+    {
+        ERF_AGUA_C = 0;
+        ERF_AGUA = 1;
+    }
+    if (ERF_TOMA_ON == 0 && ERF_TOMA_ON_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
@@ -861,10 +1032,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_TOMA_ON = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_TOMA_ON_C = 0;
             }    
-        }    
+        } 
+        ERF_TOMA_ON_C = ERF_TOMA_ON_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_TOMA_ON_C);
     }
-    if(ERF_TOMA_OFF == 0)
+    else if (ERF_TOMA_ON == 0 && ERF_TOMA_ON_C > 20)
+    {
+        ERF_TOMA_ON_C = 0;
+        ERF_TOMA_ON = 1;
+    }
+    if(ERF_TOMA_OFF == 0 && ERF_TOMA_OFF_C <= 20)
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
@@ -882,10 +1061,18 @@ void ENVIAR_ALERTAS (void)
                 ERF_TOMA_OFF = 1;
                 RADIO.setRfFrequency (MI_FREQ);
                 RADIO.setReceiveMode();
+                ERF_TOMA_OFF_C = 0;
             }    
-        }    
+        }
+        ERF_TOMA_OFF_C = ERF_TOMA_OFF_C + 1;
+        PC.printf("CONTADOR = %i \r\n",ERF_TOMA_OFF_C);
     }
-    if(CRF_CAMARA == 0)
+    else if(ERF_TOMA_OFF == 0 && ERF_TOMA_OFF_C > 20)
+    {
+        ERF_TOMA_OFF_C = 0;
+        ERF_TOMA_OFF = 1;
+    }
+    if(CRF_CAMARA == 0) //AQUI HAY QUE CONDICIONAR EL TEMA DE QUE SI LA ALAERTA SE RECIBIÓ HACE MENOS DE 1 MINUTO IGNORE LAS ALERTAS QUE LLEGUEN
     {
         RADIO.setTransmitMode();
         PREPARAR(TAM_TX, DIR_PUERTA, TAM_DIRECCIONES, RF_PUERTA);
@@ -895,10 +1082,10 @@ void ENVIAR_ALERTAS (void)
         RADIO.setReceiveMode();
         wait_ms(250);                                                      
         E_CAMARA = 0;
-        while (E_CAMARA == 0)
+        /*while (E_CAMARA == 0)
         {
             LEER_RASPBERRY();
-        }
+        }*/
         CRF_CAMARA = 1;
     }
     if(CRF_DIMMER == 0)
@@ -933,6 +1120,23 @@ void ENVIAR_ALERTAS (void)
         PC.printf("\r\n");
         CRF_CORRIENTE = 1;
     }
+    if (E_COR_I == 0)
+    {
+        RADIO.setTransmitMode();
+        PREPARAR(TAM_TX, DIR_TOMA, TAM_DIRECCIONES, RF_TOMA);
+        RADIO.write(NRF24L01P_PIPE_P0, TOMA_IR, TAM_TX);
+        PC.printf("SE RESPONDIO \r\n");
+        RADIO.setRfFrequency(MI_FREQ);
+        RADIO.setReceiveMode();
+        wait_ms(250);
+        PC.printf("%s \r\n",TOMA_IR);
+        E_COR_I = 1;
+    }
+}
+
+void HABILITAR_RECP_CAMARA (void)
+{
+    PERMISO_CAMARA = 1;
 }
 ```
 
