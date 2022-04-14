@@ -19,9 +19,18 @@ El sistema es capaz de detectar las órdenes fijadas por el usuario en la nube y
 
 ## Generalidades del Sistema
 
-- El dashboard en la nube utilizado para la presente solución fue [Ubidots](https://ubidots.com/) en su versión gratuita.
+### DASHBOARD:
+El dashboard mediante el cual el usuario puede indicar las tareas a realizar en cada módulo de control es [Ubidots](https://ubidots.com/), una plataforma IoT que permite conectar hardware con la nube mediante diferentes protocolos de comunicación como HTTP, MQTT, TCP, entre otros. Esta plataforma nos permite crear diferentes tableros que incorporan botones, gráficos, alertas y demás elementos que permiten visualizar, modificar y/o monitorear los valores de las variables ligadas a cada uno de los elementos que componen el dashboard. 
 
-    ![DASHBOARD_FINAL](Imagenes/DASHBOARD.png)
+![DASHBOARD_FINAL](Imagenes/DASHBOARD.png)
+
+### CONTROLADOR MAESTRO:
+
+Para poder establecer una comunicación entre en dashboard en la nube y el controlador maestro es necesario contar con un dispositivo con capacidad de conexión a internet. A su vez para conectar el controlador maestro con los módulos de control se requiere que la SBC tenga puertos de entrada, salida e interfaces de comunicación. 
+
+Teniendo en cuenta lo anterior, el controlador maestro implementado a partir de una SBC es básicamente un puente entre el dashboard en la nube y los módulos periféricos que son los que realizan las mediciones y/o acciones.
+
+![CONTROLADOR_MAESTRO](Imagenes/CONTROLADOR_MAESTRO.png)
 
 - La SBC que enlaza las ordenes enviadas por el usuario en la nube con el sistema es la Raspberry Pi 4 de 2GB de RAM, a la cual se le instaló el sistema operativo [Raspbian](https://www.raspberrypi.com/software/).
 
@@ -35,8 +44,6 @@ El sistema es capaz de detectar las órdenes fijadas por el usuario en la nube y
 
     ![NRF24L01](Imagenes/NRF24L01.jpg)
 
-
-
 # Solución Final
 
 ## DashBoard en Ubidots
@@ -45,10 +52,47 @@ El sistema es capaz de detectar las órdenes fijadas por el usuario en la nube y
 
 ## Controlador Maestro
 
+![DASHBOARD_FINAL](Imagenes/FOTO_CONTROLADOR.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_CONTROLADOR_MAESTRO.png)
+
 ## Módulo de Monitoreo de Puerta
+
+![DASHBOARD_FINAL](Imagenes/FOTO_MODULO_PUERTA.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_CAMARA_IMPLEMENTADA.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_SENSOR_MAGNETICO.png)
+
+![DASHBOARD_FINAL](Imagenes/CORREO_ENVIADO.png)
 
 ## Módulo Sensor de Corriente
 
+![DASHBOARD_FINAL](Imagenes/FOTO_SENSOR_CORRIENTE.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_TABLERO_SENSOR.png)
+
+![DASHBOARD_FINAL](Imagenes/ESQUEMA_TABLERO_SENSOR.png)
+
+![DASHBOARD_FINAL](Imagenes/MEDIDA_SENSOR_VS_MULTIMETRO.png)
+
 ## Módulo Dimmer
 
+![DASHBOARD_FINAL](Imagenes/FOTO_DIMMER.png)
+
+![DASHBOARD_FINAL](Imagenes/DIMMER_30.png)
+
+![DASHBOARD_FINAL](Imagenes/DIMMER_100.png)
+
 ## Módulo Dispensador de Comida y Bebida para Mascotas
+
+![DASHBOARD_FINAL](Imagenes/FOTO_MODULO_DISPENSADOR.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_DISPENSADOR_PUENTEH.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_DISPENSADOR_COMIDA.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_DISPENSADOR_AGUA.png)
+
+![DASHBOARD_FINAL](Imagenes/FOTO_DISPENSADOR.png)
+
