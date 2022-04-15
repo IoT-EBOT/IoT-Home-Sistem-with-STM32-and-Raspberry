@@ -12,7 +12,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.encoders import encode_base64
 
-# -------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
+# -------------------------------------------------Configuración Puerto Serie------------------------------------------
 
 SERIAL = serial.Serial('/dev/ttyAMA0', 9600, timeout=3.0, write_timeout=3.0)  # TTL se_port
 
@@ -367,4 +367,9 @@ if name == 'main':
             server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
             print("ALERTA DE ERROR ENVIADA ")
             server.quit()
-            
+           
+
+
+
+
+
