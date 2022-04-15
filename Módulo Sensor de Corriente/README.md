@@ -1,45 +1,64 @@
 # Diseño Módulo Sensor de Corriente
+### Tarjeta de circuito impreso módulo sensor de corriente
+![Foto módulo sensor de corriente](Imagenes/FOTO_M_SENSOR.png)
 
-El funcionamiento del sensor de corriente no invasivo (HMCT103C) consiste 	un transformador de corriente con una relación 1000:1, lo que equivale a 	obtener 1mA en los terminales de salida por cada Amperio consumido por la 	carga.
+El funcionamiento del sensor de corriente no invasivo (HMCT103C) consiste un transformador de corriente con una relación 1000:1, lo que equivale a obtener 1mA en los terminales de salida del transformador por cada Amperio consumido por la carga.
+### Tablero de pruebas módulo sensor de corriente
+![Tablero de Pruebas](Imagenes/TABLERO.png)
+### Diagrama Tablero de Pruebas
+![Diagrama Tablero de Pruebas](Imagenes/DIAGRAMA_TABLERO.png)
 
-Para poder leer la corriente entregada a la carga, es necesario conectar en 	paralelo una resistencia de Shunt al transformador de corriente, cuya función 	es entregar una caída de tención que es directamente proporcional a la 	corriente inducida en el bobinado del sensor.
-
-
+Para poder sensar la corriente entregada a la carga, es necesario conectar en paralelo una resistencia de Shunt al transformador de corriente, cuya función es entregar una caída de tención que es directamente proporcional a la corriente inducida en el bobinado del sensor.
+### Circuito de tratamiento de señal proveniente del transformador de corriente
 ![Detector de Cruce por Cero](Imagenes/SEÑAL.png)
 
-En la anterior figura se puede observar el circuito para el tratamiento de la señal captada por el sensor de corriente. Como resistencia de Shunt se optó por utilizar una resistencia variable lineal (RV1), ya que facilita la programación para los cálculos del microcontrolador.
+En la figura se puede observar el circuito para el tratamiento de la señal captada por el sensor de corriente. La resistencia de Shunt seleccionada fue un potenciómetro lineal (RV1), ya que facilita el ajuste de la señal para efectos de cálculo en el microcontrolador.
 
+La caída de tensión en la resistencia variable ingresa a un amplificador diferencial cuya función es rechazar las señales en modo común provenientes de la red eléctrica y evitar que pasen al sistema; a su vez en esta etapa se adiciona un voltaje de offset de 1.65V. Posteriormente la señal pasa por un amplificador seguidor que a la salida incluye un filtro pasa bajos RC con frecuencia de corte en 159 Hz.
+### Señal de salida amplificador diferencial
+![Señal de Salida Amplificador Diferencial](Imagenes/SE%C3%91AL_AMP_DIF.png)
+### Señal de salida filtro pasa bajas
+![Señal de Salida Filtro Pasa Bjasl](Imagenes/SE%C3%91AL_FILTRO.png)
 
-La caída de tensión en la resistencia variable ingresa a un amplificador diferencial cuya función es acoplar la señal al sistema, adicionar un voltaje 	de offset (1.65V) y actuar como filtro para la señal. Posteriormente la señal pasa por un amplificador seguidor que a la salida incluye un filtro pasa bajos RC con frecuencia de corte en 159 Hz.
-
-
-
-La señal de salida (SIGNAL) es ingresada al ADC del microcontrolador y 	representa la corriente sensada por el sistema.
-
-
+La señal de salida (SIGNAL) es ingresada al ADC del microcontrolador y representa la corriente sensada por el sistema.
+### Diagrama esquemático circuito detector de cruce por cero
 ![Detector de Cruce por Cero](Imagenes/ZCD.png)
 
-La anterior figura muestra un circuito detector de cruce por cero idéntico al 	utilizado en el módulo dimmer, pues cada vez que exista un consumo de 	corriente, este circuito genera una señal cuadrada que es la 	referencia utilizada por el microcontrolador para saber en qué momento 	iniciar las lecturas de los puertos analógicos.
-
+La figura anterior muestra un circuito detector de cruce por cero idéntico al utilizado en el módulo dimmer, pues cada vez que exista un consumo de corriente, este circuito genera una señal cuadrada que es la referencia utilizada por el microcontrolador para saber en qué momento 	iniciar la lectura de los puertos analógicos y realizar los cálculos respectivos de la corriente RMS.
+### Curva característica comparador con histéresis
+![Curva Comparador con Histéresis](Imagenes/HISTERESIS.png)
+### Señal de salida circuito detector de cruce por cero
+![Señal de Salida Detector de Cruce por cero](Imagenes/SE%C3%91AL_ZCD.png)
+### Diagrama esquemático referencia de voltaje
 ![Detector de Cruce por Cero](Imagenes/REFERENCIA.png)
 
-Es importante mencionar que en este circuito es necesario una referencia de 	voltaje estable, pues a diferencia del dimmer, la señal AC (correspondiente a 	la corriente entregada a una carga resistiva) es ingresada al ADC del 	microcontrolador, y para que los cálculos programados concuerden con la 	lectura real, se requiere de que el nivel DC sumado a la señal sea estable en 	el tiempo, además que permite garantizar que a medida que la corriente 	se 	incrementa (la amplitud de la señal crece), los límites de lectura para el 	semiciclo positivo y negativo sean los mismos (recordemos que el voltaje 	de lectura del ADC se encuentre entre 0 y 3.3V).
+Es importante mencionar que en este circuito es necesario una referencia de voltaje estable, pues a diferencia del dimmer, la señal AC (correspondiente a la corriente entregada a una carga resistiva) es ingresada al ADC del microcontrolador, y para que los cálculos realizados por el microcontrolador concuerden con la lectura real, se requiere de que el nivel DC sumado a la señal sea estable en el tiempo, además que permite garantizar que a medida que la corriente se incrementa (la amplitud de la señal crece), los límites de lectura para el semiciclo positivo y negativo sean los mismos (recordemos que el voltaje de lectura del ADC se encuentre entre 0 y 3.3V). 
+### Ventana de mediciones ADC's de la Blue Pill
+![Ventana de Lectura ADC](Imagenes/VENTANA.png)
 
+Como se observa, las entradas analógicas del microcontrolador incorporado en la Blue Pill tiene una ventana de medición entre 3.3V como valor máximo (voltaje de alimentación) y 0V. Cualquier voltaje fuera de esta ventana no puede ser leído por el ADC e incluso puede causar daños en el mismo.
+### Diagrama esquemático etapa de control
 ![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
-La etapa de control está compuesta por el microcontrolador, encargado de realizar los cálculos necesarios, relacionar la señal leída en el ADC con la corriente entregada a la carga. El radio de comunicación se encarga de enviar la corriente leída por el microcontrolador al maestro y recibir las ordenes de activación o desactivación de la etapa de potencia.}
+La etapa de control está compuesta por el microcontrolador, quien realiza el cálculo de la corriente RMS, y el radio de comunicación se encarga de enviar la corriente sensada al maestro y recibir las ordenes de activación o desactivación de la etapa de potencia.
+### Medida realizada por el sensor-vs-Lectura realizada por multímetro UT39C
+![Corriente Sensada vs Lectura Multímetro](imagenes/LECTURA_VS_MULTIMETRO.png)
 
+El microcontrolador realiza el cálculo del valor RMS de corriente a partir de la lectura de las señales del ADC. este valor es actualizado en el dashboard y dependiendo de la acción establecida por el usuario se activa o desactiva la carga mediante un optoacoplador y un TRIAC.
+### Diagrama esquemático etapa de potencia
 ![Detector de Cruce por Cero](imagenes/POTENCIA.png)
 
-La etapa de potencia para este módulo tiene como objeto habilitar o deshabilitar la conexión a la carga de corriente alterna mediante la señal 	DISPARO, por lo cual, no se incluye ninguna red Snubber para falsos disparos en el gatillo del TRIAC, además, recordemos que se pretende 	sensar únicamente corrientes entregadas a cargas resistivas, por lo que tampoco se incluye la red Snubber para cargas inductivas.
+La etapa de potencia para este módulo tiene como objeto habilitar o deshabilitar la conexión a la carga de corriente alterna mediante la señal DISPARO, por lo cual, no se incluye ninguna red Snubber para falsos disparos en el gate del TRIAC, 	además, recordemos que se pretende sensar únicamente corrientes entregadas a cargas resistivas, por lo que tampoco se incluye la red Snubber para cargas inductivas.
 
 Los terminales J3 y J4 representan perforaciones realizadas a la PCB, cuyo objeto es soldar un cable entre ellos que será el que atravesará el sensor de corriente.
-
+### Sensor atravesado por cable entre J3 y J4
+![Sensor Atravesado por cable entre J3 y J4](Imagenes/SENSOR_PCB.png)
+### Diagrama esquemático etapa de alimentación
 ![Detector de Cruce por Cero](Imagenes/ALIMENTACION.png)
 
 La figura anterior muestra la etapa de alimentación del sistema.
 
-El software desarrollado para este módulo tiene un eje fundamental, y es que al contar con un circuito detector de cruce por cero, se pretende realizar la lectura del ADC únicamente durante el semiciclo positivo de la señal, y almacenar el valor más alto censado en el mismo (valor pico).
+El software desarrollado para este módulo cuenta con un circuito detector de cruce por cero con el cual se pretende realizar la lectura del ADC únicamente durante el semiciclo positivo de la señal, y almacenar el valor más alto censado en el mismo (valor pico).
 
 
 ## Bloque de Código para Lectura de ADC's y Cálculo de Corriente RMS
@@ -47,9 +66,10 @@ El software desarrollado para este módulo tiene un eje fundamental, y es que al
 while(CALCULAR == 1)
 {
     LEC_P   = SENSOR.read();
-    LEC_DC  = VOL_DC.read();
+    //LEC_DC  = VOL_DC.read();
     LEC_SCP = LEC_P * 3.3;
-    LEC_VDC = LEC_DC * 3.3;
+    //LEC_VDC = LEC_DC * 3.3;
+    LEC_VDC = 1.65;
     DIFERENCIA = LEC_SCP - LEC_VDC;
     COR_PICO = DIFERENCIA / 0.075;
     COR_RMS_TEMP = COR_PICO * 0.707;
@@ -63,11 +83,11 @@ while(CALCULAR == 1)
     }
 }
 ```
-Al detectar el flanco de subida que concuerda con el cruce por cero previo al inicio del semiciclo positivo de la señal, se habilita la secuencia de cálculos para interpretar la señal AC del sensor de corriente. En el bloque de codigo anterior se observa que el voltaje de referencia (1.65V) ingresa a otro canal del ADC, pues como se observa en X, el microcontrolador toma la lectura de la señal de offset y de la señal AC, posteriormente lo multiplica por 3.3 para 	obtener su equivalente en voltaje. 
+Al detectar el flanco de subida que concuerda con el cruce por cero previo al inicio del semiciclo positivo de la señal, se habilita la secuencia de cálculos para interpretar la señal AC del sensor de corriente. En la figura 55 se observa que la señal AC montada sobre un nivel DC ingresa a una entrada analógica, la lectura realizada en el ADC es multiplicada por 3.3V para obtener su equivalente en voltaje y finalmente se le resta 1.65V, que corresponde al offset de la señal. Así entonces almacenamos en COR_PICO el valor máximo AC de la señal.
 
-A la señal del sensor se le resta el voltaje de referencia, es decir, al voltaje pico de la corriente, se le resta el nivel DC sobre el cual está montado, por lo cual, DIFERENCIA almacena el voltaje pico en la resistencia de Shunt, la cual, al ser variable, permite ajustarse de tal forma que cada 75mV pico en sus terminales equivalga a 1A real entregado a la carga. Como la lectura anterior y su equivalente en corriente equivalen al 	valor pico, dicho valor almacenado en COR_PICO debe ser multiplicado por 0.707 para obtener el valor eficaz de la corriente entregada a la carga. 
+El valor pico de la señal es dividida entre 75mV (cada 75mVp equivalen a 1 Ap entregado a la carga), este valor debe ser multiplicado por 0.707 para obtener el valor eficaz de la corriente entregada a la carga. 
 
-Obsérvese que el valor de la corriente RMS solo es actualizado cada vez que se toma una lectura mayor que la anterior.
+Obsérvese que el valor de la corriente RMS solo es actualizado cada vez que se toma una lectura pico mayor que la anterior.
 
 ```c
 //CODIGO ESCLAVO SENSOR DE CORRIENTE ON/OFF
@@ -111,11 +131,20 @@ void PREPARAR (int ANCHO, unsigned long long DIRECCION, int TAM_DIR, int RF);
 void FLANCOS (void);
 void LECTURAS (void);
 void ENVIARC (void);
+void ENVIAR_ESTADO_I (void);
+void LEER_RADIO (void);
 
 char RX_DATA [TAMANO];
 char TX_DATA [TAMANO];
+char ESTADO_INICIAL [TAMANO] = {'T','I','O','F'};
 char CONFIRMAR [TAMANO] = {'T','M','O','N'};
 char CONFIRMAR_2 [TAMANO] = {'T','M','O','F'};
+
+int INTENTOS = 0;
+int INTENTOS_I = 0;
+
+char RESP = 0;  
+char RESP_I = 0;
 
 unsigned char CALCULAR = 0;
 
@@ -159,15 +188,18 @@ int main ()
     timer.start();
     
     F_SUBIDA.rise(&FLANCOS);
+
+    ENVIAR_ESTADO_I ();
     
     while (1)
     {
         while(CALCULAR == 1)
         {
             LEC_P   = SENSOR.read();
-            LEC_DC  = VOL_DC.read();
+            //LEC_DC  = VOL_DC.read();
             LEC_SCP = LEC_P * 3.3;
-            LEC_VDC = LEC_DC * 3.3;
+            //LEC_VDC = LEC_DC * 3.3;
+            LEC_VDC = 1.65;
             DIFERENCIA = LEC_SCP - LEC_VDC;
             COR_PICO = DIFERENCIA / 0.075;
             COR_RMS_TEMP = COR_PICO * 0.707;
@@ -186,56 +218,7 @@ int main ()
         
         if(RADIO.readable())
         {
-            PC.printf("ALGO LLEGO\r\n");
-            RECIBIR();     
-            if(RX_DATA [0] == 'L' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'N')
-            {
-                CONTROL = 1;
-                COR_RMS = COR_RMS_TEMP = 0.0;
-                RADIO.setTransmitMode();
-                char RESPUESTA = 0;
-                while(RESPUESTA == 0)
-                {
-                    PREPARAR (TAMANO, DIR_MAESTRO, TAMANO_DIR, MI_FREQ_MST);
-                    wait_ms(250);
-                    RADIO.write(NRF24L01P_PIPE_P0, CONFIRMAR, TAMANO);
-                    RESPUESTA = RESPUESTA + 1;
-                    for(int i = 0; i<TAMANO; i++)
-                    {
-                        PC.printf("%c",CONFIRMAR [i]);
-                    }
-                    PC.printf("\r\n");
-                }
-                RESPUESTA = 0;
-                RADIO.setRfFrequency(RF_TOMA);
-                RADIO.setReceiveMode();
-            }
-            if(RX_DATA [0] == 'L' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'F')
-            {
-                CONTROL = 0;
-                COR_RMS = COR_RMS_TEMP = 0.0;
-                RADIO.setTransmitMode();
-                char RESPUESTA = 0;
-                while(RESPUESTA == 0)
-                {
-                    PREPARAR (TAMANO, DIR_MAESTRO, TAMANO_DIR, MI_FREQ_MST);
-                    wait_ms(250);
-                    RADIO.write(NRF24L01P_PIPE_P0, CONFIRMAR_2, TAMANO);
-                    RESPUESTA = RESPUESTA + 1;
-                    for(int i = 0; i<TAMANO; i++)
-                    {
-                        PC.printf("%c",CONFIRMAR [i]);
-                    }
-                    PC.printf("\r\n");
-                }
-                RESPUESTA = 0;
-                RADIO.setRfFrequency(RF_TOMA);
-                RADIO.setReceiveMode();
-            }
-            for (int i = 0; i<4;i++)
-            {
-                RX_DATA[i] = ' ';
-            }           
+            LEER_RADIO();           
         }
         
         TIEMPO = timer.read();
@@ -289,7 +272,6 @@ void LECTURAS (void)
 }
 void ENVIARC (void)
 {
-    int INTENTOS = 0;
     
     DECIMAL  = (COR_RMS - int(COR_RMS))*100;     
     UNIDAD_1 = (DECIMAL / 10);
@@ -301,7 +283,7 @@ void ENVIARC (void)
     TX_DATA [3] = 'Z';
     
     //
-    char RESP = 0;     //UBICAR 
+    RESP = 0;
     while(RESP == 0)
     {
         RADIO.setTransmitMode();
@@ -337,14 +319,102 @@ void ENVIARC (void)
             timer.reset();
             INTENTOS = 0;
         }
+        LEER_RADIO();
+    }
+}
+
+void ENVIAR_ESTADO_I (void)
+{
+    RESP_I = 0;
+
+    while(RESP_I == 0)
+    {
+        RADIO.setTransmitMode();
+        RADIO.setRfFrequency(MI_FREQ_MST);
+        RADIO.write(NRF24L01P_PIPE_P0, ESTADO_INICIAL, TAMANO);
+        PC.printf("RADIO ENVIO MENSAJE INICIAL \r\n");
+        RADIO.setRfFrequency (RF_TOMA);
+        RADIO.setReceiveMode();
+        wait_ms (RETARDO);
+        if(RADIO.readable())
+        {
+            PC.printf("RADIO TIENE ALGO PARA LEER \r\n");
+            RECIBIR();
+            if(RX_DATA[0] == 'T' && RX_DATA[1] == 'E' && RX_DATA[2] == 'I' && RX_DATA[3] == 'R')
+            {
+                RESP_I = 1;
+                INTENTOS_I = 0;
+                RADIO.setRfFrequency (RF_TOMA);
+                RADIO.setReceiveMode();
+            }
+        }
+        
+        INTENTOS_I = INTENTOS_I + 1;
+        
+        if (INTENTOS_I >= REPETIR_ENVIO)
+        {
+            RESP_I = 1;
+            RADIO.setRfFrequency (RF_TOMA);
+            RADIO.setReceiveMode();
+        }
+        LEER_RADIO();
+    }
+}
+void LEER_RADIO (void)
+{
+    PC.printf("ALGO LLEGO\r\n");
+    RECIBIR();     
+    if(RX_DATA [0] == 'L' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'N')
+    {
+        CONTROL = 1;
+        COR_RMS = COR_RMS_TEMP = 0.0;
+        RADIO.setTransmitMode();
+        char RESPUESTA = 0;
+        while(RESPUESTA == 0)
+        {
+            PREPARAR (TAMANO, DIR_MAESTRO, TAMANO_DIR, MI_FREQ_MST);
+            wait_ms(250);
+            RADIO.write(NRF24L01P_PIPE_P0, CONFIRMAR, TAMANO);
+            RESPUESTA = RESPUESTA + 1;
+            for(int i = 0; i<TAMANO; i++)
+            {
+                PC.printf("%c",CONFIRMAR [i]);
+            }
+            PC.printf("\r\n");
+        }
+        RESPUESTA = 0;
+        RADIO.setRfFrequency(RF_TOMA);
+        RADIO.setReceiveMode();
+    }
+    if(RX_DATA [0] == 'L' && RX_DATA [1] == 'D' && RX_DATA [2] == 'O' && RX_DATA [3] == 'F')
+    {
+        CONTROL = 0;
+        COR_RMS = COR_RMS_TEMP = 0.0;
+        RADIO.setTransmitMode();
+        char RESPUESTA = 0;
+        while(RESPUESTA == 0)
+        {
+            PREPARAR (TAMANO, DIR_MAESTRO, TAMANO_DIR, MI_FREQ_MST);
+            wait_ms(250);
+            RADIO.write(NRF24L01P_PIPE_P0, CONFIRMAR_2, TAMANO);
+            RESPUESTA = RESPUESTA + 1;
+            for(int i = 0; i<TAMANO; i++)
+            {
+                PC.printf("%c",CONFIRMAR [i]);
+            }
+            PC.printf("\r\n");
+        }
+        RESPUESTA = 0;
+        RADIO.setRfFrequency(RF_TOMA);
+        RADIO.setReceiveMode();
+    }
+    for (int i = 0; i<4;i++)
+    {
+        RX_DATA[i] = ' ';
     }
 }
 ```
-
 ## Diagrama de Flujo General Módulo Sensor de Corriente
 
 ![Detector de Cruce por Cero](Imagenes/DIAGRAMA_GENERAL.png)
 
-## Diagramas de Flujo Interrupciones Módulo Sensor de Corriente
-
-![Detector de Cruce por Cero](Imagenes/INTERRUPCION_1.png)
