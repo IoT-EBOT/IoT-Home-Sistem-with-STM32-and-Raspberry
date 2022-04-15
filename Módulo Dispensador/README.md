@@ -1,23 +1,23 @@
 # Diseño Módulo Dispensador
-
+### Tarjeta de circuito impreso módulo Dispensador
 ![Módulo Dispensador](Imagenes/FOTO_DISPENSADOR.png)
 
 Este módulo está encargado de dispensar el alimento y el agua para la mascota. Para la comida se optó por utilizar un tornillo sin fin, cuya función es transportar la comida desde el depósito hasta la salida donde se ubicará el recipiente. Mientras que, para el agua se optó por usar una motobomba para transportar el líquido desde el recipiente (por medio de una manguera) hasta la salida.
-
+### Dispensador de comida (motor y tornillo sin fin)
 ![Dispensador Comida](Imagenes/DISPENSADOR_COMIDA.png)
-
+### Dispensador de agua (motobomba)
 ![Dispensador Agua](Imagenes/DISPENSADOR_AGUA.png)
 
 Para la activación eléctrica del motor DC y la motobomba DC, se usó un puente H de dos canales el cuál viene configurado con sus componentes externos en un PCB (revisar tabla de especificaciones técnicas del sistema). El puente H se utiliza como driver de corriente y por cada canal se utiliza en configuración de medio puente teniendo en cuenta que no se necesita inversión de giro; el control de velocidad solo tendrá 2 estados (encendido o apagado).
-
+### Conexión módulo dispensador con puente H
 ![Conexiones con Módulo Puente H](Imagenes/DISPENSADOR_PUENTEH.png)
-
+### Diagrama esquemático módulo dispensador
 ![Etapa de Control y Alimentación](Imagenes/CONTROL.png)
 
 En la figura se ilustra la conexión entre el microcontrolador y el puente H para el control de los dos actuadores. Además, se cuenta con 2 conectores (J3 y J5) de los cuales salen las señales para el control de cada canal en el driver de corriente.tornillo sin fin y/o la motobomba.
-
+### Conexiones generales módulo Dispensador
 ![Conexiones generales módulo Dispensador](Imagenes/DISPENSADOR_GENERAL.png)
-
+### Prototipo Dispensador
 ![Prototipo Dispensador](Imagenes/DISPENSADOR.png)
 
 ## Código Completo Módulo Dispensador
@@ -234,6 +234,6 @@ void HABILITAR_WATER (void)
 }
 ```
 
-## Diagrama de Flujo General Módulo Dispensador
+## Diagrama de Flujo Módulo Dispensador
 ![Diagrama General](Imagenes/DIAGRAMA_GENERAL.png)
 

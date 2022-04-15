@@ -10,15 +10,15 @@ Se realizó una prueba con un maestro transmisor y un esclavo receptor, donde el
 
 El transmisor se ubicó en diferentes habitaciones del hogar, mientras que el receptor se posicionó en un segundo piso (punto medio a nivel del escenario usado) para que, al recibir el mensaje, este sea impreso en un terminal (Putty).
 
-### Escenario bajo prueba:
-
+## Escenario bajo prueba:
+### Plano primera planta
 ![PLANO PLANTA 1](Imagenes/PLANO_1.png)
-
+### Plano Segunda planta
 ![PLANO PLANTA 2](Imagenes/PLANO_2.png)
-
+### Plano Tercera planta
 ![PLANO PLANTA 3](Imagenes/PLANO_3.png)
 
-### Interpretación de Resultados:
+## Interpretación de Resultados:
 
 | Ubicación del Receptor | Ubicación del Transmisor | Distancia (m) | Tiempo Transcurrido para la recepción de datos | Color |
 | :---         |     :---:      |          ---: |          ---: |          ---: |

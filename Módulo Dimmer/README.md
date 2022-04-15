@@ -1,37 +1,38 @@
 # Diseño Módulo Dimmer
-
+### Tarjeta de circuito impreso módulo Dimmer
 ![Foto módulo Dimmer](Imagenes/FOTO_M_DIMMER.png)
 
 Para controlar el ángulo de disparo para cada semiciclo de la señal sinusoidal de la red doméstica (120V-60Hz para Colombia), es necesario identificar el instante de tiempo en el cual la señal tiene un valor de 0V, pues este punto será la referencia que tendremos para realizar los cálculos necesarios y realizar la activación de la etapa de potencia en el momento justo según la orden enviada desde Ubidots.
-
+### Carga al 30%
 ![Carga al 30%](Imagenes/DIMMER_30.png)
-
+### Carga al 100%
 ![Carga al 100%](Imagenes/DIMMER_100.png)
-
+### Circuito detector de cruce por cero
 ![Detector de Cruce por Cero](Imagenes/ZCD.png)
 
 El circuito detector de cruce por cero desarrollado está encargado de generar una señal cuadrada a la salida (SIGNALZCD), donde los flancos de subida y de baja coinciden con el punto exacto donde la señal de la red doméstica toma un valor de 0V.
 
 En la entrada (Fin-Nin) es conectada la señal alterna de la red, esta pasa por una etapa de atenuación (R1-R3), además cuenta con dos capacitores (C1-C2) que proporcionan aislamiento galvánico. La señal atenuada ingresa a un amplificador diferencial cuya función es rechazar las señales en modo común provenientes de la red eléctrica y evitar que pasen al sistema; para que la señal en su salida esté montada sobre un nivel DC, la resistencia R3 se conecta a la referencia de 1.65V. Para que el sistema no tenga ganancia R1 es igual a R2, y R3 es igual a R4.
 
+### Señal de salida amplificador diferencial
 ![Señal de salida amplificador diferencial](Imagenes/SE%C3%91AL_AMP_DIF.png)
 
 La señal filtrada y sumada con un nivel DC es llevada a un amplificador operacional configurado como comparador con histéresis. El voltaje de referencia o comparación será el mismo voltaje de Offset adicionado a la señal en la etapa anterior, pues este nivel DC coincide con los instantes de tiempo donde la señal alterna cruza por cero. 
-
+### Curva característica circuito detector de cruce por cero
 ![Curva comparador con histéresis](Imagenes/CURVA_HISTERESIS.png)
-
+### Señal de salida circuito detector de cruce por cero
 ![Señal de salida ZCD](Imagenes/SE%C3%91AL_ZCD.png)
 
 La salida del comparador no puede ser conectada directamente al microcontrolador, pues el voltaje de alimentación del TL084 es de 5V DC y su voltaje de saturación supera los 3.3V que es el umbral máximo de las entradas de la Blue Pill. Esto nos lleva a conectar un transistor a la salida del comparador, con el fin de obtener la señal de salida (señal cuadrada de cruce por cero - SIGNALZCD) con valores de 3.3V para un valor ALTO y así evitar daños en el microcontrolador.
 
 Una vez tratada la señal de la red doméstica para detectar el cruce por cero, el control de ángulo de disparo es determinado por el microcontrolador según el porcentaje definido por el usuario desde Ubidots, pues dicho porcentaje será el entregado a la carga tanto en el semiciclo positivo, como en el negativo.
-
+### Diagrama esquemático etapa de control
 ![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
 En la figura se observa que se adicionaron 2 conectores a los cuales irán conectados 3 botones capacitivos los cuales permiten variar el ciclo útil de la señal de disparo manualmente (aumentar o disminuir) o apagar directamente la carga. 
-
+### Señal de disparo carga al 30%
 ![Señal de disparo 30%](Imagenes/DISPARO_30.png)
-
+### Señal de disparo carga al 100%
 ![Señal de disparo 100%](Imagenes/DISPARO_100.png)
 
 ## Bloque de código para los calculos de tiempo en alto y bajo de la señal digital de disparo
@@ -81,19 +82,19 @@ void FLANCOS (void)
 ```
 
 Posteriormente, el microcontrolador detecta cada flanco (tanto subida como bajada) de la señal de cruce por cero mediante una interrupción. Si el porcentaje de luminosidad determinado por el usuario es igual a 0, entonces se asegura que la señal de disparo del TRIAC se mantenga siempre en bajo, mientras que cuando dicho valor es igual a 100, se asegura que la etapa de potencia esté activa todo el tiempo. Cuando el valor del dimmer proporcionado por el usuario es diferente a 0 y 100, entonces, el microcontrolador asegura un valor lógico de 0 en la señal de disparo, y sólo activará la etapa de potencia una vez pasado el tiempo en bajo (T_BAJO) calculado. 
-
+### Funcionamiento Dimmer controaldo desde Ubidots
 ![Funcionamiento Dimmer controaldo desde Ubidots](Imagenes/DIMMER_UBIDOTS.png)
 
 Como resultado, la señal de DISPARO es una señal cuadrada, de 120 Hz, alineada a la derecha, y cuyo ciclo útil es proporcional al valor definido en el dashboard por el usuario.
 
 La etapa de potencia está compuesta por un optoacoplador con salida de TRIAC sin circuito de detección de cruce por cero (para un control arbitrario del TRIAC) junto a un BT138 capaz de soportar cargas de máximo 12A. Al TRIAC se le adicionó una red Snubber para evitar falsos disparos en gate y se provee la inclusión de otra red Snubber para cargas inductivas (R14 - C6).
-
+### Señal de disparo y señal en la carga al 30%
 ![Señal entregada a la carga al 30%](Imagenes/CARGA_30.png)
-
+### Señal de disparo y señal en la carga al 50%
 ![Señal entregada a la carga al 50%](Imagenes/CARGA_50.png)
-
+### Diagrama esquemático etapa de potencia
 ![Detector de Cruce por Cero](Imagenes/POTENCIA.png)
-
+### Diagrama esquemático etapa de alimentación y referencia de voltaje
 ![Detector de Cruce por Cero](Imagenes/ALIMENTACION.png)
 
 
@@ -442,5 +443,5 @@ void OFF_DIMM (void)
     }
 }
 ```
-## Diagrama de Flujo
+## Diagrama de Flujo Módulo Dimmer
 ![Detector de Cruce por Cero](Imagenes/DIAGRAMA_GENERAL.png)

@@ -1,59 +1,59 @@
 # Diseño Módulo Sensor de Corriente
-
+### Tarjeta de circuito impreso módulo sensor de corriente
 ![Foto módulo sensor de corriente](Imagenes/FOTO_M_SENSOR.png)
 
 El funcionamiento del sensor de corriente no invasivo (HMCT103C) consiste un transformador de corriente con una relación 1000:1, lo que equivale a obtener 1mA en los terminales de salida del transformador por cada Amperio consumido por la carga.
-
+### Tablero de pruebas módulo sensor de corriente
 ![Tablero de Pruebas](Imagenes/TABLERO.png)
-
+### Diagrama Tablero de Pruebas
 ![Diagrama Tablero de Pruebas](Imagenes/DIAGRAMA_TABLERO.png)
 
 Para poder sensar la corriente entregada a la carga, es necesario conectar en paralelo una resistencia de Shunt al transformador de corriente, cuya función es entregar una caída de tención que es directamente proporcional a la corriente inducida en el bobinado del sensor.
-
+### Circuito de tratamiento de señal proveniente del transformador de corriente
 ![Detector de Cruce por Cero](Imagenes/SEÑAL.png)
 
 En la figura se puede observar el circuito para el tratamiento de la señal captada por el sensor de corriente. La resistencia de Shunt seleccionada fue un potenciómetro lineal (RV1), ya que facilita el ajuste de la señal para efectos de cálculo en el microcontrolador.
 
 La caída de tensión en la resistencia variable ingresa a un amplificador diferencial cuya función es rechazar las señales en modo común provenientes de la red eléctrica y evitar que pasen al sistema; a su vez en esta etapa se adiciona un voltaje de offset de 1.65V. Posteriormente la señal pasa por un amplificador seguidor que a la salida incluye un filtro pasa bajos RC con frecuencia de corte en 159 Hz.
-
+### Señal de salida amplificador diferencial
 ![Señal de Salida Amplificador Diferencial](Imagenes/SE%C3%91AL_AMP_DIF.png)
-
+### Señal de salida filtro pasa bajas
 ![Señal de Salida Filtro Pasa Bjasl](Imagenes/SE%C3%91AL_FILTRO.png)
 
 La señal de salida (SIGNAL) es ingresada al ADC del microcontrolador y representa la corriente sensada por el sistema.
-
+### Diagrama esquemático circuito detector de cruce por cero
 ![Detector de Cruce por Cero](Imagenes/ZCD.png)
 
 La figura anterior muestra un circuito detector de cruce por cero idéntico al utilizado en el módulo dimmer, pues cada vez que exista un consumo de corriente, este circuito genera una señal cuadrada que es la referencia utilizada por el microcontrolador para saber en qué momento 	iniciar la lectura de los puertos analógicos y realizar los cálculos respectivos de la corriente RMS.
-
+### Curva característica comparador con histéresis
 ![Curva Comparador con Histéresis](Imagenes/HISTERESIS.png)
-
+### Señal de salida circuito detector de cruce por cero
 ![Señal de Salida Detector de Cruce por cero](Imagenes/SE%C3%91AL_ZCD.png)
-
+### Diagrama esquemático referencia de voltaje
 ![Detector de Cruce por Cero](Imagenes/REFERENCIA.png)
 
 Es importante mencionar que en este circuito es necesario una referencia de voltaje estable, pues a diferencia del dimmer, la señal AC (correspondiente a la corriente entregada a una carga resistiva) es ingresada al ADC del microcontrolador, y para que los cálculos realizados por el microcontrolador concuerden con la lectura real, se requiere de que el nivel DC sumado a la señal sea estable en el tiempo, además que permite garantizar que a medida que la corriente se incrementa (la amplitud de la señal crece), los límites de lectura para el semiciclo positivo y negativo sean los mismos (recordemos que el voltaje de lectura del ADC se encuentre entre 0 y 3.3V). 
-
+### Ventana de mediciones ADC's de la Blue Pill
 ![Ventana de Lectura ADC](Imagenes/VENTANA.png)
 
 Como se observa, las entradas analógicas del microcontrolador incorporado en la Blue Pill tiene una ventana de medición entre 3.3V como valor máximo (voltaje de alimentación) y 0V. Cualquier voltaje fuera de esta ventana no puede ser leído por el ADC e incluso puede causar daños en el mismo.
-
+### Diagrama esquemático etapa de control
 ![Detector de Cruce por Cero](Imagenes/CONTROL.png)
 
 La etapa de control está compuesta por el microcontrolador, quien realiza el cálculo de la corriente RMS, y el radio de comunicación se encarga de enviar la corriente sensada al maestro y recibir las ordenes de activación o desactivación de la etapa de potencia.
-
+### Medida realizada por el sensor-vs-Lectura realizada por multímetro UT39C
 ![Corriente Sensada vs Lectura Multímetro](imagenes/LECTURA_VS_MULTIMETRO.png)
 
 El microcontrolador realiza el cálculo del valor RMS de corriente a partir de la lectura de las señales del ADC. este valor es actualizado en el dashboard y dependiendo de la acción establecida por el usuario se activa o desactiva la carga mediante un optoacoplador y un TRIAC.
-
+### Diagrama esquemático etapa de potencia
 ![Detector de Cruce por Cero](imagenes/POTENCIA.png)
 
 La etapa de potencia para este módulo tiene como objeto habilitar o deshabilitar la conexión a la carga de corriente alterna mediante la señal DISPARO, por lo cual, no se incluye ninguna red Snubber para falsos disparos en el gate del TRIAC, 	además, recordemos que se pretende sensar únicamente corrientes entregadas a cargas resistivas, por lo que tampoco se incluye la red Snubber para cargas inductivas.
 
 Los terminales J3 y J4 representan perforaciones realizadas a la PCB, cuyo objeto es soldar un cable entre ellos que será el que atravesará el sensor de corriente.
-
+### Sensor atravesado por cable entre J3 y J4
 ![Sensor Atravesado por cable entre J3 y J4](Imagenes/SENSOR_PCB.png)
-
+### Diagrama esquemático etapa de alimentación
 ![Detector de Cruce por Cero](Imagenes/ALIMENTACION.png)
 
 La figura anterior muestra la etapa de alimentación del sistema.

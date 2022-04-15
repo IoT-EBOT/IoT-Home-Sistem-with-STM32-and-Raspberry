@@ -1,11 +1,12 @@
 # Diseño Controlador Maestro
-
+### Tarjeta de circuito impreso módulo controlador maestro
 ![Módulo Controlador Maestro](Imagenes/FOTO_CONTROLADOR_MAESTRO.png)
-
+### Foto conexión módulo controlador maestro y Raspberry Pi
 ![Controlador Maestro y Raspberry](Imagenes/FOTO_CONTROLADOR_RASPBERRY.png)
 
 Si bien la SBC tiene la capacidad de enviar y recibir información desde y hacia Ubidots, es necesario implementar un radio NRF24L01 con un microcontrolador como etapa previa entre la Raspberry y los módulos de control. La Raspberry Pi cuenta con una interfaz de comunicación SPI, por lo que la conexión con el radio podría ser directa, sin embargo, para facilitar el desarrollo del controlador maestro, se decide [habilitar Puerto Serie de la Raspberry Pi](https://github.com/IoT-EBOT/IoT-Home-Sistem-with-STM32-and-Raspberry/tree/main/Controlador%20Maestro/Raspberry%20Pi/Configuracion%20Puerto%20Serie%20Raspberry%20Pi). De esta forma la etapa del microcontrolador y el radio conforman una etapa que puede modelarse como un buffer, el cual evitará pérdida de datos teniendo en cuenta que el sistema operativo que corre la Raspberry no es un sistema en tiempo real. Por otra parte, ya existen librerías que facilitan el desarrollo de la comunicación entre los radios y el microcontrolador.
 
+### Diagrama esquemático Módulo Controlador Maestro
 ![ESQUEMÁTICO](Imagenes/ESQUEMATICO.png)
 
 Por lo tanto, el módulo del controlador maestro cuenta con un conector GPIO macho de 40 pines (J1) que permite la comunicación serial entre la Raspberry pi y el microcontrolador, y además, proporciona la alimentación necesaria para los componentes de la PCB (microcontrolador y radio). Se adicionó un led que permite reconocer si el programa se está ejecutando en la Raspberry Pi, y unos filtros pasivos (condensadores) para intentar minimizar el ripple en la salidas de 3.3V y 5V.

@@ -1,5 +1,5 @@
 # Diseño Módulo de Monitoreo de Puerta
-
+### Tarjeta de circuito impreso módulo de monitoreo de puerta
 ![Foto módulo](Imagenes/FOTO_MODULO.png)
 
 El sistema de monitoreo está encargado de detectar la apertura de la puerta mediante un interruptor magnético normalmente cerrado y enviar una alerta al controlador maestro para que la SBC se encargue de tomar un breve video (10 segundos) desde la cámara IP para posteriormente enviarlo al correo electrónico del usuario. Para realizar la comunicación entre la Raspberry Pi y la cámara IP, y además capturar el video, es necesario instalar una serie de librerías descritas a continuación: 
@@ -39,9 +39,9 @@ cv2.__version__
 ```
 
 ![3](Imagenes/3.png)
-
+### Foto cámara implementada
 ![Foto cámara](Imagenes/FOTO_CAMARA.png)
-
+### Foto contacto magnético en puerta
 ![Foto contacto magnético](Imagenes/FOTO_CONTACTO.png)
 
 Una vez enviada la alerta al controlador Maestro, la SBC se encarga de establecer comunicación con la cámara IP, iniciar la grabación y posteriormente enviar el video por correo electrónico, por lo cual, es necesario realizar una serie de ajustes en la cámara para asignarle una IP estática.
@@ -83,21 +83,21 @@ Además, debe proporcionarse un correo electrónico con su respectiva contraseñ
 ![CORREO DATA](Imagenes/CORREO_DATA.png)
 
 Una vez finalizado el proceso de captura de video, el video será almacenado en una ruta especifica y enviado al correo electrónico, dicho video será sobrescrito con cada nueva alerta. 
-
+### Correo electrónico enviado
 ![Correo Enviado](Imagenes/CORREO.png)
 
 ## Hardware Módulo de Monitoreo de Puerta
-
+### Diagrama esquemático etapa de alimentación
 ![ALIMENTACIÓN](Imagenes/ALIMENTACION.png)
 
 En la anterior figura se muestra la etapa de alimentación del módulo de control.
-
+### Diagrama esquemático circuito contacto magnético y led indicador
 ![INTERRUPTOR](Imagenes/INTERRUPTOR.png)
 
 La anterior figura muestra un circuito resistivo tipo pull up con antirrebote, ya que el sensor magnético es en esencia un interruptor mecánico activado mediante un campo magnético (Reed switch). Al ser accionado con la apertura de la puerta cambia su estado, por lo cual el circuito antirrebote es indispensable para evitar falsos disparos en las interrupciones por flancos del microcontrolador. También se observa un led encargado de indicar el cambio de estado del sensor.
 
 ![FUNC_SEN](Imagenes/FUNC_SEN.png)
-
+### Diagrama esquemático etapa de control
 ![CONTROL](Imagenes/CONTROL.png)
 
 La figura muestra la etapa de control compuesta por el microcontrolador, encargado de monitorear el estado del sensor magnético, y el radio NFR24L01, encargado de comunicarse con el maestro enviándole una alerta indicando la apertura de la puerta, para que este inicie el proceso de captura y envió del video desde la cámara IP.
@@ -377,5 +377,5 @@ void ENVIAR_A(void)
     }   
 }
 ```
-
+## Diagrama de Flujo Código en C Para Microcontrolador
 ![DIAGRAMA_MICRO](Imagenes/DIAGRAMA_MICRO.png)
