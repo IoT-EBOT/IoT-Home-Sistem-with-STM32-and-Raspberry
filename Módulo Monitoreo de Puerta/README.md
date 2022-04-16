@@ -1,22 +1,26 @@
-# Diseño Módulo de Monitoreo de Puerta
+# __Diseño Módulo de Monitoreo de Puerta__
 ### Tarjeta de circuito impreso módulo de monitoreo de puerta
 ![Foto módulo](Imagenes/FOTO_MODULO.png)
 
 El sistema de monitoreo está encargado de detectar la apertura de la puerta mediante un interruptor magnético normalmente cerrado y enviar una alerta al controlador maestro para que la SBC se encargue de tomar un breve video (10 segundos) desde la cámara IP para posteriormente enviarlo al correo electrónico del usuario. Para realizar la comunicación entre la Raspberry Pi y la cámara IP, y además capturar el video, es necesario instalar una serie de librerías descritas a continuación: 
 
-* OPENCV: Encargada de forzar la grabación y procesar el video proporcionada por la cámara IP.
-* SMTPLIB: Encargada de comprimir el video y enviarlo al correo proporcionado por el usuario. 
+* __OPENCV:__ Encargada de forzar la grabación y procesar el video proporcionada por la cámara IP.
+* __PICKLE:__ Encargada de extraer y almacenar el token de "client_secret.json" para la autenticación con la API de Gmail. 
+* __CLIENTE DE GOOGLE:__ Biblioteca del cliente de google encargada de enviar correos electronicos mediante la API de google.
 
 A continuación, se describe los pasos desarrollados para la preparación de la Raspberry Pi con las librerías mencionadas.
 
-## 1. Instalación de paquetes para manejo de datos de video
+## __1. Instalación de paquetes para manejo de datos de video (OPENCV):__
+
+### 1. Instalación librerias para tratar archivos de imagen y video 
+
 ```Shell:
 sudo apt-get install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev libqtgui4 libqt4-test
 ```
 
 ![1](Imagenes/1.png)
 
-## 2. Instalación OpenCV 4 con sus módulos principales 
+### 2. Instalación OpenCV 4 con sus módulos principales 
 
 ```Shell
 pip3 install opencv-contrib-python==4.1.0.25
@@ -24,7 +28,7 @@ pip3 install opencv-contrib-python==4.1.0.25
 
 ![2](Imagenes/2.png)
 
-## 3. Comprobación de la instalación  
+### 3. Comprobación de la instalación CV2  
 
 ```Shell
 python3
@@ -39,6 +43,19 @@ cv2.__version__
 ```
 
 ![3](Imagenes/3.png)
+
+## __2. Instalación pickle__
+
+```Shell
+pip3 install pickle-mixin
+```
+## __3. Instalación libreria del cliente de Google__
+
+```Shell
+pip3 install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+```
+
+
 ### Foto cámara implementada
 ![Foto cámara](Imagenes/FOTO_CAMARA.png)
 ### Foto contacto magnético en puerta
@@ -46,8 +63,9 @@ cv2.__version__
 
 Una vez enviada la alerta al controlador Maestro, la SBC se encarga de establecer comunicación con la cámara IP, iniciar la grabación y posteriormente enviar el video por correo electrónico, por lo cual, es necesario realizar una serie de ajustes en la cámara para asignarle una IP estática.
 
-# Desarrollo Programa Python Para Grabación de Video
+# __Desarrollo Programa Python Para Grabación de Video Y Envio Correo Electronico__
 
+## __Configuracion de la camara IP__
 Para comunicar la cámara IP con la Raspberry PI 4 es necesario asignar una IP estática para la cámara en la red local. La aplicación V380 PRO proporcionada por el fabricante de la cámara, nos permite configurarla.
 
 ![Configuración Cámara](Imagenes/CONF_CAMARA.png)
@@ -60,27 +78,37 @@ Una vez conocida la URL de RTSP, ya se puede configurar los parámetros necesari
 
 ![CAMERA_DATA](Imagenes/CAMERA_DATA.png)
 
-En este bloque de código se configuran los parámetros que tendrá el video: ancho de imagen (pixeles), alto de imagen (pixeles), y fotogramas por segundo. También se debe configurar el formato en el cual está codificado el video (.MP4) para que se pueda reproducir en casi cualquier dispositivo, y finalmente, el nombre que recibirá la grabación al guardarse. 
+En este bloque de código se configuran los parámetros que tendrá el video: ancho de imagen (pixeles), alto de imagen (pixeles), y fotogramas por segundo. También se debe configurar el formato en el cual está codificado el video (X264) y finalmente, el nombre que recibirá la grabación al guardarse (GRABACION.avi) posteriormente este formato sera cambiado por .MP4 para que se peuda visualizar en cualquier dispositivo. 
 
 ![GRABAR](Imagenes/GRABAR.png)
 
-Una vez la SBC recibe la orden de grabar el video y este ha sido procesado (conversión a formato MP4) se procede a enviar al correo electrónico del usuario mediante un protocolo SMTP (Protocolo simple de transferencia de correo). Durante el desarrollo del proyecto se usó Gmail como plataforma para enviar el video, pero se pueden usar otros servicios de correo electrónico.
-
-| Servicio Correo| Servidor | Puerto |
-| ---      | ---       | ---       |
-| Gmail | smtp.gmail.com | 465,25 o 587 |
-| Outlook | smtp.live.com | 587 |
-| Hotmail | smtp.live.com | 587 |
-| Yahoo! Mail | smtp.mail.yahoo.com | 25 |
-
-Los puertos SMTP más usados son: 25, 465, 587, 2525. El puerto 25 es el puerto por defecto para los servicios SMTP, sin embargo, en la actualidad este puerto no se usa debido a la gran cantidad de mensajes spam que se envían a través de él. El 587 es el puerto por defecto y permite enviar correos electrónicos de manera segura. Finalmente, el 465 permite él envió de correos con mayor seguridad.
-
-
-Además, debe proporcionarse un correo electrónico con su respectiva contraseña, este debe contar con acceso a aplicaciones poco seguras o servicios de terceros. Este correo será utilizado como remitente a la hora en enviar el video de la apertura de la puerta al usuario. 
+Una vez la SBC recibe la orden de grabar el video y este ha sido procesado se procede a enviar al correo electrónico del usuario mediante la API de Gmail y la autenticación OAuth 2.0 recomendada por Google, ya que el cliente de protocolo SMTP (Protocolo simple de transferencia de correo) comúnmente usada para el envió de correos electrónicos requiere acceso de aplicaciones poco seguras y esta opción pierde su acceso a partir del 30 de mayo de 2022. 
 
 ![PERMISO](Imagenes/PERMISO.png)
 
-![CORREO DATA](Imagenes/CORREO_DATA.png)
+Durante el desarrollo del proyecto se usó Gmail como plataforma para enviar el video y los pasos serán descritos a continuación:
+
+## __Configuracion API Gmail y envio de correo__ 
+
+Para usar los servicios de API de Google Gmail se deben seguir una serie de pasos descritos a continuación estos pasos son suministrados por la documentación de Google [ (API DE GMAIL) ](https://developers.google.com/gmail/api/quickstart/python).
+
+En primer lugar, se debe crear un proyecto en [Google Cloud Platform](https://console.cloud.google.com/), en la barra de búsqueda se debe buscar la API de Gmail, luego se debe crear un proyecto en API Y SERVICIOS donde se deberá crear también las credenciales (ID de cliente de OAuth)
+
+![PERMISO](Imagenes/CREDENCIAL.png)
+
+una vez habilitada la API podremos descargar las credenciales (.json), estas serán necesarias para obtener el token que permite la autenticación mediante OAuth 2.0.
+
+![PERMISO](Imagenes/JSON.png)
+
+Este archivo debe estar en la misma ruta donde se encuenta el codigo (CAPTURA_CAMARA.py) con el nombre de CREDENCIALES
+
+![PERMISO](Imagenes/ARCHIVOS.png)
+
+La primera vez que el código es ejecutado lo redirecciona a una ventana que le solicita iniciar sesión con su cuenta de Google y pedirá que autorice el acceso a sus datos  
+
+![PERMISO](Imagenes/PERMISOS.png)
+
+ Este correo será utilizado como remitente a la hora en enviar el video de la apertura de la puerta al usuario. 
 
 Una vez finalizado el proceso de captura de video, el video será almacenado en una ruta especifica y enviado al correo electrónico, dicho video será sobrescrito con cada nueva alerta. 
 ### Correo electrónico enviado
@@ -128,7 +156,11 @@ from mimetypes import guess_type as guess_mime_type
 EMPIEZA_CONTEO = time.time()   # conteo para finalizar grabacion
 TEMPORIZADOR_GRABACION = 20    # tiempo de ejecucion del programa
 
+<<<<<<< HEAD
 URL = 'rtsp://192.168.0.100/live/ch00_1' # URL camara IP
+=======
+URL = 'rtsp://192.168.0.7:8080/h264_ulaw.sdp' # URL camara IP
+>>>>>>> ac91d58070a40a7b2564e4b083303d3a398ffe24
 CAPTURA = cv2.VideoCapture(URL)
 
 FPS = CAPTURA.get(cv2.CAP_PROP_FPS)
@@ -140,6 +172,7 @@ VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
 #-----------DATOS ENVIO CORREO------------------
 
 SCOPES = ['https://mail.google.com/']
+<<<<<<< HEAD
 
 RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi"
 
@@ -148,6 +181,10 @@ CORREO_DESTINO = "dgomezbernal24@gmail.com"
 CORREO_DESTINO_2 = "cristiancobos2002@gmail.com"
 ASUNTO_MSG = "PRUEBA DE ENVIO"
 CUERPO_MSG = "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL"
+=======
+CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
+CORREO_DESTINO = "dgomezbernal24@gmail.com"
+>>>>>>> ac91d58070a40a7b2564e4b083303d3a398ffe24
 
 #-------------------------------------------------
 
@@ -258,9 +295,14 @@ if __name__ == '__main__':
 
     CAP_VIDEO()
     print("SE CERRO PROGRAMA DE GRABACION EMPEZANDO ENVIO DE CORREO ") 
+<<<<<<< HEAD
     ENVIO_CORREO(service, CORREO_DESTINO, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
     ENVIO_CORREO(service, CORREO_DESTINO_2, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
+=======
+    ENVIO_CORREO(service, CORREO_DESTINO, "PRUEBA DE ENVIO", "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL", ["/home/pi/Desktop/MAESTRO/GRABACION.avi"])
+>>>>>>> ac91d58070a40a7b2564e4b083303d3a398ffe24
     exit(1)
+
 ```
 
 ## Diagrama de Flujo Código en Python Para Captura y Envío de Video (SBC)
