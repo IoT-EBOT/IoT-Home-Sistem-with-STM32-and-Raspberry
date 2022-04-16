@@ -1,18 +1,28 @@
+import os
+import pickle
 import cv2
 import numpy as np
 import time
-import smtplib
-
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
+# Utilidades de la API de Gmail
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+# codificar/decodificar mensajes en base64
+from base64 import urlsafe_b64decode, urlsafe_b64encode
 from email.encoders import encode_base64
+# para tratar con tipos MIME adjuntos
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+#from email.mime.image import MIMEImage
+#from email.mime.audio import MIMEAudio
+from email.mime.base import MIMEBase
+from mimetypes import guess_type as guess_mime_type
 
+#--------------DATOS GRABACION--------------
 EMPIEZA_CONTEO = time.time()   # conteo para finalizar grabacion
 TEMPORIZADOR_GRABACION = 20    # tiempo de ejecucion del programa
 
-#--------------DATOS GRABACION--------------
-URL = 'rtsp://192.168.0.100/live/ch00_1'
+URL = 'rtsp://192.168.0.100/live/ch00_1' # URL camara IP
 CAPTURA = cv2.VideoCapture(URL)
 
 FPS = CAPTURA.get(cv2.CAP_PROP_FPS)
@@ -22,37 +32,81 @@ FORMATO = cv2.VideoWriter_fourcc('X','2','6','4')
 VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
 
 #-----------DATOS ENVIO CORREO------------------
-CORREO_DESTINO = 'dgomezbernal24@gmail.com'
-CORREO_DESTINO_2 = 'cristiancobos2002@gmail.com'
+
+SCOPES = ['https://mail.google.com/']
+
+RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi"
+
 CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
-PASSWORD = 'E-BOT2021' 
-smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
-msg = MIMEMultipart()
+CORREO_DESTINO = "dgomezbernal24@gmail.com"
+CORREO_DESTINO_2 = "cristiancobos2002@gmail.com"
+ASUNTO_MSG = "PRUEBA DE ENVIO"
+CUERPO_MSG = "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL"
 
-def ENVIO_CORREO():
+#-------------------------------------------------
 
-    msg['To'] = CORREO_DESTINO
-    msg['To'] = CORREO_DESTINO_2
-    msg['From'] = CORREO_MAESTRO
-    msg['Subject'] = 'ALERTA PUERTA'
-    msg.attach(MIMEText('GRABACION DE ALERTA DETECTADA EN LA PUERTA '))
-    GRABACION = open('/home/pi/Desktop/MAESTRO/GRABACION.avi', 'rb')  # RUTA DEL VIDEO A MANDAR
-    adjunto = MIMEBase('multipart', 'encrypted')
+def gmail_authenticate():
+    creds = None
+    # el archivo token.pickle almacena los tokens de acceso y actualización del usuario, y es
+    # creado automáticamente cuando el flujo de autorización se completa por primera vez
+    if os.path.exists("token.pickle"):
+        with open("token.pickle", "rb") as token:
+            creds = pickle.load(token)
+    # si no hay credenciales disponibles, permita que el usuario inicie sesión.
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file('CREDENCIALES.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        # guardar las credenciales para la próxima ejecución
+        with open("token.pickle", "wb") as token:
+            pickle.dump(creds, token)
+    return build('gmail', 'v1', credentials=creds)
 
-    adjunto.set_payload(GRABACION.read())
-    GRABACION.close()
-    encode_base64(adjunto)
-    adjunto.add_header('Content-Disposition', 'attachment', filename='VIDEO GRABADO.mp4')
-    msg.attach(adjunto)
+# obtener el servicio API de Gmail
+service = gmail_authenticate()
 
-    server = smtplib.SMTP(smtp_server)
-    server.starttls()
-    server.login(CORREO_MAESTRO, PASSWORD)
-    server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
-    server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
-    print("GRABACION ENVIADA")
-    server.quit()
-    
+# Agrega el archivo adjunto con el nombre de archivo dado al mensaje dado
+def add_attachment(message, filename):
+
+    content_type, encoding = guess_mime_type(filename)
+
+    if content_type is None or encoding is not None:
+        content_type = 'application/octet-stream'
+    main_type, sub_type = content_type.split('/', 1)
+
+    fp = open(filename, 'rb')
+    msg = MIMEBase(main_type, sub_type)
+
+    msg.set_payload(fp.read())
+    fp.close()
+    encode_base64(msg)#super importante esta joda o se manda el video corrompido (verde todo)
+
+    msg.add_header('Content-Disposition', 'attachment', filename ='VIDEO GRABADO.mp4' )
+    message.attach(msg)
+
+def build_message(CORREO_DESTINO, ASUNTO, body, attachments=[]):
+
+    message = MIMEMultipart()
+
+    message['to'] = CORREO_DESTINO
+    message['from'] = CORREO_MAESTRO
+    message['subject'] = ASUNTO
+
+    message.attach(MIMEText(body))
+
+    for filename in attachments:
+        add_attachment(message, filename)
+
+    return {'raw': urlsafe_b64encode(message.as_bytes()).decode()}
+
+def ENVIO_CORREO(service, CORREO_DESTINO, ASUNTO, body, attachments=[]):
+    return service.users().messages().send(
+      userId="me",
+      body=build_message(CORREO_DESTINO, ASUNTO, body, attachments)
+    ).execute()
+
 def CAP_VIDEO():
    
     DETENER = False
@@ -95,10 +149,9 @@ def CAP_VIDEO():
     cv2.destroyAllWindows()    
 
 if __name__ == '__main__':
-    
-    print("Se ejecuto la rutina principal ")  
+
     CAP_VIDEO()
-    ENVIO_CORREO()
-    print("SE CERRO PROGRAMA DE GRABACION") 
+    print("SE CERRO PROGRAMA DE GRABACION EMPEZANDO ENVIO DE CORREO ") 
+    ENVIO_CORREO(service, CORREO_DESTINO, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
+    ENVIO_CORREO(service, CORREO_DESTINO_2, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
     exit(1)
-    

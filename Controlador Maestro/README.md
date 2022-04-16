@@ -20,20 +20,24 @@ import requests
 import serial
 import time
 import os
-
 import smtplib
+import RPi.GPIO as gpio
+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.encoders import encode_base64
 
-# -------------------------------------------------ConfiguraciOn Puerto Serie------------------------------------------
+gpio.setmode(gpio.BOARD)
+gpio.setup(36, gpio.OUT)
+
+# -------------------------------------------------Configuración Puerto Serie------------------------------------------
 
 SERIAL = serial.Serial('/dev/ttyAMA0', 9600, timeout=3.0, write_timeout=3.0)  # TTL se_port
 
 # ---------------------------------------------Parametros  y variables en Ubidots-------------------------------------------
 
-TOKEN = "BBFF-1JPdBOfYF2swcxLWhBIwkKDZLmeBti"   # TOKEN de ubidots 
+TOKEN = "BBFF-KTENSeYz4imv5bl5kPZmtJrrE2qnU4"   # TOKEN de ubidots 
 DEVICE_LABEL = "raspberry"                      # Nombre de dispositivo en Ubidots
 
 CICLO_UTIL = "dimmer"                           # VARIABLE: Ciclo util para disparo de dimmer
@@ -113,7 +117,8 @@ def OBTENER_DATO(device, variable):
         url = url + \
               "api/v1.6/devices/{0}/{1}/".format(device, variable)
         headers = {"X-Auth-Token": TOKEN, "Content-Type": "application/json"}
-        req = requests.get(url=url, headers=headers)
+        session = requests.Session()
+        req = session.get(url=url, headers=headers)
         return req.json()['last_value']['value']
     except:
         pass
@@ -248,7 +253,8 @@ name = 'main'
 if name == 'main':
 
     #-----------------------------------------------------------------------------RECUPERAR DATOS DESDE UBIDOTS-----------------------------------------------------------------------------
-
+    gpio.output(36, True)
+    
     TEMP_CICLO = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
     TEMP_INTERRUPTOR = OBTENER_DATO(DEVICE_LABEL, INTERRUPTOR)
     TEMP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
@@ -362,6 +368,7 @@ if name == 'main':
 
         except:
             print('ERROR DETECTADO')
+            gpio.output(36, False)
             CORREO_DESTINO = 'dgomezbernal24@gmail.com'
             CORREO_DESTINO_2 = 'cristiancobos2002@gmail.com'
             CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
