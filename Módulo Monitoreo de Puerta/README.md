@@ -156,7 +156,11 @@ from mimetypes import guess_type as guess_mime_type
 EMPIEZA_CONTEO = time.time()   # conteo para finalizar grabacion
 TEMPORIZADOR_GRABACION = 20    # tiempo de ejecucion del programa
 
+<<<<<<< HEAD
+URL = 'rtsp://192.168.0.100/live/ch00_1' # URL camara IP
+=======
 URL = 'rtsp://192.168.0.7:8080/h264_ulaw.sdp' # URL camara IP
+>>>>>>> ac91d58070a40a7b2564e4b083303d3a398ffe24
 CAPTURA = cv2.VideoCapture(URL)
 
 FPS = CAPTURA.get(cv2.CAP_PROP_FPS)
@@ -168,8 +172,19 @@ VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
 #-----------DATOS ENVIO CORREO------------------
 
 SCOPES = ['https://mail.google.com/']
+<<<<<<< HEAD
+
+RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi"
+
 CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
 CORREO_DESTINO = "dgomezbernal24@gmail.com"
+CORREO_DESTINO_2 = "cristiancobos2002@gmail.com"
+ASUNTO_MSG = "PRUEBA DE ENVIO"
+CUERPO_MSG = "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL"
+=======
+CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
+CORREO_DESTINO = "dgomezbernal24@gmail.com"
+>>>>>>> ac91d58070a40a7b2564e4b083303d3a398ffe24
 
 #-------------------------------------------------
 
@@ -280,7 +295,12 @@ if __name__ == '__main__':
 
     CAP_VIDEO()
     print("SE CERRO PROGRAMA DE GRABACION EMPEZANDO ENVIO DE CORREO ") 
+<<<<<<< HEAD
+    ENVIO_CORREO(service, CORREO_DESTINO, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
+    ENVIO_CORREO(service, CORREO_DESTINO_2, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
+=======
     ENVIO_CORREO(service, CORREO_DESTINO, "PRUEBA DE ENVIO", "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL", ["/home/pi/Desktop/MAESTRO/GRABACION.avi"])
+>>>>>>> ac91d58070a40a7b2564e4b083303d3a398ffe24
     exit(1)
 
 ```
