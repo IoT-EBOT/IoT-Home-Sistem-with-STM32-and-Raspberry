@@ -19,10 +19,10 @@ from email.mime.base import MIMEBase
 from mimetypes import guess_type as guess_mime_type
 
 #--------------DATOS GRABACION--------------
-EMPIEZA_CONTEO = time.time()   
-TEMPORIZADOR_GRABACION = 20    # Conteo para finalizar grabacion
+EMPIEZA_CONTEO = time.time()   # conteo para finalizar grabacion
+TEMPORIZADOR_GRABACION = 20    # tiempo de ejecucion del programa
 
-URL = 'rtsp://192.168.0.7:8080/h264_ulaw.sdp' # URL camara IP 
+URL = 'rtsp://192.168.0.100/live/ch00_1' # URL camara IP
 CAPTURA = cv2.VideoCapture(URL)
 
 FPS = CAPTURA.get(cv2.CAP_PROP_FPS)
@@ -33,14 +33,17 @@ VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
 
 #-----------DATOS ENVIO CORREO------------------
 
-SCOPES = ['https://mail.google.com/']  
+SCOPES = ['https://mail.google.com/'] #Solicitud acceso: Lea, redacte, envíe y 
+                                      #elimine permanentemente todo su correo electrónico de Gmail
 
-RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi" 
+RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi" # Direccion donde se encuentra la 
+                                                          # grabacion que se enviara por correo 
 
-CORREO_MAESTRO = 'iot.e.bot21@gmail.com' 
+CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
 CORREO_DESTINO = "dgomezbernal24@gmail.com"
-ASUNTO_MSG = "PRUEBA DE ENVIO"
-CUERPO_MSG = "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL"
+CORREO_DESTINO_2 = "cristiancobos2002@gmail.com"
+ASUNTO_MSG = "ALERTA APERTURA PUERTA"
+CUERPO_MSG = "GRABACION DE ALERTA DETECTADA EN LA PUERTA"
 
 #-------------------------------------------------
 
@@ -80,7 +83,7 @@ def add_attachment(message, filename):
 
     msg.set_payload(fp.read())
     fp.close()
-    encode_base64(msg)#super importante esta joda o se manda el video corrompido (verde todo)
+    encode_base64(msg)
 
     msg.add_header('Content-Disposition', 'attachment', filename ='VIDEO GRABADO.mp4' )
     message.attach(msg)
@@ -152,4 +155,5 @@ if __name__ == '__main__':
     CAP_VIDEO()
     print("SE CERRO PROGRAMA DE GRABACION EMPEZANDO ENVIO DE CORREO ") 
     ENVIO_CORREO(service, CORREO_DESTINO, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
+    ENVIO_CORREO(service, CORREO_DESTINO_2, ASUNTO_MSG, CUERPO_MSG, [RUTA_GRABACION])
     exit(1)

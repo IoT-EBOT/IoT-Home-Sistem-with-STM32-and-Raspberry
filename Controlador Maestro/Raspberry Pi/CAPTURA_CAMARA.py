@@ -33,15 +33,17 @@ VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
 
 #-----------DATOS ENVIO CORREO------------------
 
-SCOPES = ['https://mail.google.com/']
+SCOPES = ['https://mail.google.com/'] #Solicitud acceso: Lea, redacte, envíe y 
+                                      #elimine permanentemente todo su correo electrónico de Gmail
 
-RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi"
+RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi" # Direccion donde se encuentra la 
+                                                          # grabacion que se enviara por correo 
 
 CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
 CORREO_DESTINO = "dgomezbernal24@gmail.com"
 CORREO_DESTINO_2 = "cristiancobos2002@gmail.com"
-ASUNTO_MSG = "PRUEBA DE ENVIO"
-CUERPO_MSG = "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL"
+ASUNTO_MSG = "ALERTA APERTURA PUERTA"
+CUERPO_MSG = "GRABACION DE ALERTA DETECTADA EN LA PUERTA"
 
 #-------------------------------------------------
 
@@ -81,7 +83,7 @@ def add_attachment(message, filename):
 
     msg.set_payload(fp.read())
     fp.close()
-    encode_base64(msg)#super importante esta joda o se manda el video corrompido (verde todo)
+    encode_base64(msg)
 
     msg.add_header('Content-Disposition', 'attachment', filename ='VIDEO GRABADO.mp4' )
     message.attach(msg)
