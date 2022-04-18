@@ -19,10 +19,10 @@ from email.mime.base import MIMEBase
 from mimetypes import guess_type as guess_mime_type
 
 #--------------DATOS GRABACION--------------
-EMPIEZA_CONTEO = time.time()   # conteo para finalizar grabacion
-TEMPORIZADOR_GRABACION = 20    # tiempo de ejecucion del programa
+EMPIEZA_CONTEO = time.time()   
+TEMPORIZADOR_GRABACION = 20    # Conteo para finalizar grabacion
 
-URL = 'rtsp://192.168.0.7:8080/h264_ulaw.sdp' # URL camara IP
+URL = 'rtsp://192.168.0.7:8080/h264_ulaw.sdp' # URL camara IP 
 CAPTURA = cv2.VideoCapture(URL)
 
 FPS = CAPTURA.get(cv2.CAP_PROP_FPS)
@@ -33,11 +33,11 @@ VIDEO_SALIDA = cv2.VideoWriter('GRABACION.avi', FORMATO, FPS, (ANCHO,ALTO))
 
 #-----------DATOS ENVIO CORREO------------------
 
-SCOPES = ['https://mail.google.com/']
+SCOPES = ['https://mail.google.com/']  
 
-RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi"
+RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi" 
 
-CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
+CORREO_MAESTRO = 'iot.e.bot21@gmail.com' 
 CORREO_DESTINO = "dgomezbernal24@gmail.com"
 ASUNTO_MSG = "PRUEBA DE ENVIO"
 CUERPO_MSG = "PRUEBA ENVIO DE VIDEO AL CORREO MEDIANTE A API GMAIL"
