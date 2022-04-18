@@ -374,4 +374,3 @@ if name == 'main':
             server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
             print("ALERTA DE ERROR ENVIADA ")
             server.quit()
-            
