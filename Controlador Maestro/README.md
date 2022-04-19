@@ -648,10 +648,10 @@ int main (void)
                     PORCENTAJE = PORCENTAJE_T;
                     RASPBERRY.putc('C');
                     E_CICLO = 0;
-                    /*while (E_CICLO == 0)    //REVISAR
+                    while (E_CICLO == 0)
                     {
                         LEER_RASPBERRY();
-                    }*/
+                    }
                     LEER_RASPBERRY();
                }
                else
@@ -676,10 +676,10 @@ int main (void)
                     VALOR_COR = VALOR_COR_T;
                     RASPBERRY.putc('Z');
                     E_COR = 0;                                                  
-                    /*while (E_COR == 0)
+                    while (E_COR == 0)
                     {
                         LEER_RASPBERRY();
-                    }*/
+                    }
                     LEER_RASPBERRY();
                 }
                 else
