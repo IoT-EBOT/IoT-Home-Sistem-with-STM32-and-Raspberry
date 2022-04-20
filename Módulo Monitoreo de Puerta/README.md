@@ -81,7 +81,7 @@ pip3 install opencv-python
 ```
 
 ### NOTA:
-Pude que la versión de OpenCV instala sea superior a la versión de Numpy instalada en el sistema. Si es el caso, debe ejecutar los siguientes comandos para desinstalar la antigua versión e instalar la más reciente de Numpy.
+Pude que la versión de OpenCV instala sea superior a la versión de Numpy instalada en sistema. Si es el caso, debe ejecutar los siguientes comandos para desinstalar la antigua versión e instalar la más reciente de Numpy.
 
 ```Shell
 sudo apt update
