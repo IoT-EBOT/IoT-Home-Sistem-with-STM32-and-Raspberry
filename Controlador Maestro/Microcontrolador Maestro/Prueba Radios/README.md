@@ -21,7 +21,7 @@ El transmisor se ubicó en diferentes habitaciones del hogar, mientras que el re
 ## Interpretación de Resultados:
 
 | Ubicación del Receptor | Ubicación del Transmisor | Distancia (m) | Tiempo Transcurrido para la recepción de datos | Color |
-| :---         |     :---:      |          ---: |          ---: |          ---: |
+| :---:         |     :---:      |          :---: |          :---: |          :---: |
 | Segundo Piso | Primer Piso | 6 | 1-15 Segundos | ![Diagramas de flujo simplificados](Imagenes/VERDE.png) |
 | Segundo Piso | Primer Piso | 10 | >15 Segundos | ![Diagramas de flujo simplificados](Imagenes/NARANJA.png) |
 | Segundo Piso | Primer Piso | 10| >15 Segundos | ![Diagramas de flujo simplificados](Imagenes/NARANJA.png) |
