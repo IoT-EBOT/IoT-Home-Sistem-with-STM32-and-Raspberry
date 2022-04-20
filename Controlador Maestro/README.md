@@ -115,10 +115,9 @@ def OBTENER_DATO(device, variable):
     try:
         url = "http://industrial.api.ubidots.com/"
         url = url + \
-              "api/v1.6/devices/{0}/{1}/".format(device, variable)
+            "api/v1.6/devices/{0}/{1}/".format(device, variable)
         headers = {"X-Auth-Token": TOKEN, "Content-Type": "application/json"}
-        session = requests.Session()
-        req = session.get(url=url, headers=headers)
+        req = requests.get(url=url, headers=headers)
         return req.json()['last_value']['value']
     except:
         pass
