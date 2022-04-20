@@ -109,7 +109,7 @@ cv2.__version__
 
 ![3](Imagenes/3.png)
 
-El mensaje con la versión de OpenCV instalada puede variar, sin embargo, esto indica que la libraría fue instalada correctamente en la ruta de Python 3.
+El mensaje con la versión de OpenCV instalada puede variar, sin embargo, esto indica que la librería fue instalada correctamente en la ruta de Python 3.
 
 ## __2. Instalación pickle__
 
