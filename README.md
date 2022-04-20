@@ -43,23 +43,23 @@ Teniendo en cuenta lo anterior, el controlador maestro implementado a partir de 
 
 # Componentes principales de la solución
 
-| Componente | Aspecto Físico |
-| :---         |          ---: |
-| Raspberry Pi 4                | ![](Imagenes/RASPBERRY.png) |
-| Blue Pill                     | ![](Imagenes/BLUEPILL.png) |
-| Radio nRF24L01                | ![](Imagenes/RADIO.png) |
-| Cámara IP                     | ![](Imagenes/CAMARA.png) |
-| Motor DC                      | ![](Imagenes/MOTOR.png) |
-| Motobomba DC                  | ![](Imagenes/MOTOBOMBA.png) |
-| Módulo Puente H               | ![](Imagenes/PUENTEH.png) |
-| Conversor AC/DC               | ![](Imagenes/FUENTE.png) |
-| Regulador de Voltaje          | ![](Imagenes/78L33.png) |
-| Amplificador Operacional      | ![](Imagenes/358.png) |
-| Amplificador Operacional      | ![](Imagenes/TL084.png) |
-| Optoacoplador                 | ![](Imagenes/3021.png) |
-| Tiristor                      | ![](Imagenes/BT138.png) |
-| Transformador de Corriente    | ![](Imagenes/CURRENT_T.png) |
-| Contacto Magnético            | ![](Imagenes/SENSOR_PUERTA.png) |
+| Componente | Aspecto Físico | Aspecto Físico |
+| :---         |          ---: |          ---: |
+| Raspberry Pi 4                | **Procesador:** ARM corex-A72 64bits 4 núcleos 1.5 GHz.<br /> **GPU:** Video Core VI.<br /> **Memoria RAM:** 2GB.<br /> **Puertos:** Pines GPIO (40), micro HDMI (2), USB 2.0 (2), USB 3.0 (2).<br /> **Conectividad:** WI-FI, Bluetooth 5.0, Gigabit Ethernet |![](Imagenes/RASPBERRY.png) |
+| Blue Pill                     |  |![](Imagenes/BLUEPILL.png) |
+| Radio nRF24L01                |  |![](Imagenes/RADIO.png) |
+| Cámara IP                     |  |![](Imagenes/CAMARA.png) |
+| Motor DC                      |  |![](Imagenes/MOTOR.png) |
+| Motobomba DC                  |  |![](Imagenes/MOTOBOMBA.png) |
+| Módulo Puente H               |  |![](Imagenes/PUENTEH.png) |
+| Conversor AC/DC               |  |![](Imagenes/FUENTE.png) |
+| Regulador de Voltaje          |  |![](Imagenes/78L33.png) |
+| Amplificador Operacional      |  |![](Imagenes/358.png) |
+| Amplificador Operacional      |  |![](Imagenes/TL084.png) |
+| Optoacoplador                 |  |![](Imagenes/3021.png) |
+| Tiristor                      |  |![](Imagenes/BT138.png) |
+| Transformador de Corriente    |  |![](Imagenes/CURRENT_T.png) |
+| Contacto Magnético            |  |![](Imagenes/SENSOR_PUERTA.png) |
 
 # Solución Final
 
