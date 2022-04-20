@@ -115,10 +115,9 @@ def OBTENER_DATO(device, variable):
     try:
         url = "http://industrial.api.ubidots.com/"
         url = url + \
-              "api/v1.6/devices/{0}/{1}/".format(device, variable)
+            "api/v1.6/devices/{0}/{1}/".format(device, variable)
         headers = {"X-Auth-Token": TOKEN, "Content-Type": "application/json"}
-        session = requests.Session()
-        req = session.get(url=url, headers=headers)
+        req = requests.get(url=url, headers=headers)
         return req.json()['last_value']['value']
     except:
         pass
@@ -648,10 +647,10 @@ int main (void)
                     PORCENTAJE = PORCENTAJE_T;
                     RASPBERRY.putc('C');
                     E_CICLO = 0;
-                    /*while (E_CICLO == 0)    //REVISAR
+                    while (E_CICLO == 0)
                     {
                         LEER_RASPBERRY();
-                    }*/
+                    }
                     LEER_RASPBERRY();
                }
                else
@@ -676,10 +675,10 @@ int main (void)
                     VALOR_COR = VALOR_COR_T;
                     RASPBERRY.putc('Z');
                     E_COR = 0;                                                  
-                    /*while (E_COR == 0)
+                    while (E_COR == 0)
                     {
                         LEER_RASPBERRY();
-                    }*/
+                    }
                     LEER_RASPBERRY();
                 }
                 else

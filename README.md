@@ -43,23 +43,23 @@ Teniendo en cuenta lo anterior, el controlador maestro implementado a partir de 
 
 # Componentes principales de la solución
 
-| Componente | Aspecto Físico |
-| :---         |          ---: |
-| Raspberry Pi 4                | ![](Imagenes/RASPBERRY.png) |
-| Blue Pill                     | ![](Imagenes/BLUEPILL.png) |
-| Radio nRF24L01                | ![](Imagenes/RADIO.png) |
-| Cámara IP                     | ![](Imagenes/CAMARA.png) |
-| Motor DC                      | ![](Imagenes/MOTOR.png) |
-| Motobomba DC                  | ![](Imagenes/MOTOBOMBA.png) |
-| Módulo Puente H               | ![](Imagenes/PUENTEH.png) |
-| Conversor AC/DC               | ![](Imagenes/FUENTE.png) |
-| Regulador de Voltaje          | ![](Imagenes/78L33.png) |
-| Amplificador Operacional      | ![](Imagenes/358.png) |
-| Amplificador Operacional      | ![](Imagenes/TL084.png) |
-| Optoacoplador                 | ![](Imagenes/3021.png) |
-| Tiristor                      | ![](Imagenes/BT138.png) |
-| Transformador de Corriente    | ![](Imagenes/CURRENT_T.png) |
-| Contacto Magnético            | ![](Imagenes/SENSOR_PUERTA.png) |
+| Componente | Aspecto Físico | Aspecto Físico |
+| :---:         |          :--- |          :---: |
+| Raspberry Pi 4                | **Procesador:** ARM corex-A72 64bits 4 núcleos 1.5 GHz<br /> **GPU:** Video Core VI<br /> **Memoria RAM:** 2GB<br /> **Puertos:** Pines GPIO (40), micro HDMI (2), USB 2.0 (2), USB 3.0 (2)<br /> **Conectividad:** WI-FI, Bluetooth 5.0, Gigabit Ethernet |![](Imagenes/RASPBERRY.png) |
+| Blue Pill                     | **Voltaje de operación:** 3.3V<br /> **Pines analógicos:** 10<br /> **Pines Digitales:** 37<br /> **Protocolos de comunicación:** SPI (2), UART (3), I2C (2)<br /> **Memoria flash:** 64/128 KB<br /> **Memoria SRAM:** 20KB<br />  |![](Imagenes/BLUEPILL.png) |
+| Radio nRF24L01                | **Modulo transceptor**<br />**Voltaje de operación:** 3.3V<br />**Protocolo de comunicación:** SPI<br />**Frecuencia:** 2.4 GHz – 2.5GHz<br />**Canales RF:** 126<br />**Alcance:** 20m – 30m |![](Imagenes/RADIO.png) |
+| Cámara IP                     | **Modelo:** V380<br />**Protocolo:** ONVIF<br />**Visión nocturna**<br />**Conectividad:** WIFI, Red RJ45<br />**Resolución:** 1080p |![](Imagenes/CAMARA.png) |
+| Motor DC                      | **Modelo JGY370**<br />**Motor con motorreductor de engranajes**<br />**Voltaje de operación:** 12V DC<br />**Corriente de operación:** 0.5A<br />**Velocidad:** 40RPM<br />**Torque:** 3 Kg/cm |![](Imagenes/MOTOR.png) |
+| Motobomba DC                  | **Modelo:** R385<br />**Voltaje de operación:** 12V DC<br />**Corriente de operación:** 0.5-0.7A<br />**Dimensiones:** 90mm x 40 mm x 35mm<br />**Flujo volumétrico:** 1.5-2 L/min<br />**Diámetro de salida:** 6mm |![](Imagenes/MOTOBOMBA.png) |
+| Módulo Puente H               | **Circuito Integrado:** L298<br />**Voltaje de operación:** 5V DC<br />**Corriente de operación:** 36mA<br />**Número de canales:** 2<br />**Voltaje por canal:** 5V DC - 35V DC<br />**Corriente MAX por canal:** 2A |![](Imagenes/PUENTEH.png) |
+| Conversor AC/DC               | **Modelo:** Hi-link (HLK-PM01)<br />**Voltaje de entrada:** 100-240V AC<br />**Voltaje de salida:** 5V DC<br />**Corriente de salida:** 0.6A DC<br /> |![](Imagenes/FUENTE.png) |
+| Regulador de Voltaje          | **Modelo:** L78L33<br />**Voltaje Max entrada:** 30V DC<br />**Voltaje de salida:** 3.3V DC<br />**Corriente de salida:** 100mA |![](Imagenes/78L33.png) |
+| Amplificador Operacional      | **Modelo:** LM358<br />**Numero de amplificadores:** 2<br />**Voltaje de operación:** 3V – 32V<br />**Voltaje offset entradas:** 2mV<br />**Ganancia de voltaje diferencial:** 100 dB |![](Imagenes/358.png) |
+| Amplificador Operacional      | **Modelo:** TL084<br />**Entradas transistores JFET**<br />**Numero de amplificadores:** 4<br />**Voltaje de operación:** ± 18V<br />**Voltaje offset entradas:** 3mV |![](Imagenes/TL084.png) |
+| Optoacoplador                 | **Modelo:** MOC 3021<br />**Salida:** Fototriac<br />**Voltaje directo Max LED:** 1.5V<br />**Corriente Max LED:** 60mA<br />**Corriente de activación LED:** 15-30mA<br />**Voltaje Max salida:** 400Vp |![](Imagenes/3021.png) |
+| Tiristor                      | **Modelo:** TRIAC BT138<br />**Valor instantáneo máximo de pulsos de voltaje (VDRM):** 600V<br />**Valor de corriente RMS ánodo-cátodo en directo (IT):** 12A<br />**Valor pico máximo de corriente encendido:** 95A<br />**Voltaje pico de gate (VGM):** 5V<br />**Corriente máxima Trigger Gate:** 70mA |![](Imagenes/BT138.png) |
+| Transformador de Corriente    | **Modelo:** ZMCT103C<br />**Rango corriente de entrada:** 0 - 10A (50Ω)<br />**Rango corriente de salida:** 5mA<br />**Proporción:** 1000:1<br />**Linealidad:** ≤0.2%<br />**Voltaje de aislamiento:** 4500V |![](Imagenes/CURRENT_T.png) |
+| Contacto Magnético            | **Tipo:** Interruptor Reed Switch<br />**Voltaje máximo:** 100V DC<br />**Corriente máxima:** 0.5A<br />**Potencia:** 10W<br />**Distancia de actuación:** 20-25mm |![](Imagenes/SENSOR_PUERTA.png) |
 
 # Solución Final
 

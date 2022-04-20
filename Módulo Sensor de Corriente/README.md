@@ -42,11 +42,11 @@ Como se observa, las entradas analógicas del microcontrolador incorporado en la
 
 La etapa de control está compuesta por el microcontrolador, quien realiza el cálculo de la corriente RMS, y el radio de comunicación se encarga de enviar la corriente sensada al maestro y recibir las ordenes de activación o desactivación de la etapa de potencia.
 ### Medida realizada por el sensor-vs-Lectura realizada por multímetro UT39C
-![Corriente Sensada vs Lectura Multímetro](imagenes/LECTURA_VS_MULTIMETRO.png)
+![Corriente Sensada vs Lectura Multímetro](Imagenes/LECTURA_VS_MULTIMETRO.png)
 
 El microcontrolador realiza el cálculo del valor RMS de corriente a partir de la lectura de las señales del ADC. este valor es actualizado en el dashboard y dependiendo de la acción establecida por el usuario se activa o desactiva la carga mediante un optoacoplador y un TRIAC.
 ### Diagrama esquemático etapa de potencia
-![Detector de Cruce por Cero](imagenes/POTENCIA.png)
+![Etapa de Potencia](Imagenes/POTENCIA.png)
 
 La etapa de potencia para este módulo tiene como objeto habilitar o deshabilitar la conexión a la carga de corriente alterna mediante la señal DISPARO, por lo cual, no se incluye ninguna red Snubber para falsos disparos en el gate del TRIAC, 	además, recordemos que se pretende sensar únicamente corrientes entregadas a cargas resistivas, por lo que tampoco se incluye la red Snubber para cargas inductivas.
 

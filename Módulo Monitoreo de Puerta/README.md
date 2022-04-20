@@ -22,11 +22,76 @@ sudo apt-get install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-
 
 ### 2. Instalación OpenCV 4 con sus módulos principales 
 
+Se debe instalar la herramienta de desarrollo CMake que es necesaria para compilar OpenCV.
+
 ```Shell
-pip3 install opencv-contrib-python==4.1.0.25
+sudo apt install build-essential cmake pkg-config
 ```
 
-![2](Imagenes/2.png)
+También se debe instalar bibliotecas adicionales para abrir archivos de imagen en la SBC. Eso incluye JPG, JPEG, PNG, etc.
+
+```Shell
+sudo apt install libjpeg-dev libtiff5-dev libjasper-dev libpng-dev
+```
+
+Aparte de las imágenes, también necesitamos bibliotecas que permitan el uso de archivos de video.
+
+```Shell
+sudo apt install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
+
+sudo apt install libxvidcore-dev libx264-dev
+```
+
+Para mostrar imágenes en pantalla de nuestra SBC e incluso desarrollar interfaces gráficas de usuario (GUI), necesitaremos un módulo llamado highgui.
+
+```Shell
+sudo apt install libfontconfig1-dev libcairo2-dev
+
+sudo apt install libgdk-pixbuf2.0-dev libpango1.0-dev
+
+sudo apt install libgtk2.0-dev libgtk-3-dev
+```
+
+Para realizar operaciones matriciales, necesitaremos instalar dependencias adicionales.
+
+```Shell
+sudo apt install libatlas-base-dev gfortran
+```
+
+También se debe instalar las siguiente bibliotecas adicionales necesarias para los conjuntos de datos HD5 y el desarrollo de las GUI de QT.
+
+```Shell
+sudo apt install libhdf5-dev libhdf5-serial-dev libhdf5-103
+
+sudo apt install libqt5gui5 libqt5webkit5 libqt5test5 python3-pyqt5
+```
+
+Por último, necesitaremos instalar los archivos de encabezado de Python 3 necesarios para compilar OpenCV.
+
+```Shell
+sudo apt install python3-dev
+```
+
+Si su sistema operativo está actualizado, probablemente verá el siguiente mensaje: "python3-dev ya es la versión más nueva".
+
+
+Finalmente, podemos instalar OpenCV
+```Shell
+pip3 install opencv-python
+```
+
+### NOTA:
+Pude que la versión de OpenCV instala sea superior a la versión de Numpy en el sistema. Si es el caso, debe ejecutar los siguientes comandos para desinstalar la antigua versión e instalar la más reciente de Numpy.
+
+```Shell
+sudo apt update
+
+sudo apt remove python3-numpy
+
+sudo apt install libatlas3-base
+
+sudo pip3 install numpy
+```
 
 ### 3. Comprobación de la instalación CV2  
 
@@ -43,6 +108,8 @@ cv2.__version__
 ```
 
 ![3](Imagenes/3.png)
+
+El mensaje con la versión de OpenCV instalada puede variar, sin embargo, esto indica que la librería fue instalada correctamente en la ruta de Python 3.
 
 ## __2. Instalación pickle__
 
