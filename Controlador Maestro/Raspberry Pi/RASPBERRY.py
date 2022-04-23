@@ -13,8 +13,10 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.encoders import encode_base64
 
+gpio.setwarnings(False)
 gpio.setmode(gpio.BOARD)
 gpio.setup(36, gpio.OUT)
+
 
 # -------------------------------------------------Configuración Puerto Serie------------------------------------------
 
@@ -155,21 +157,21 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         DUTY = SERIAL.readline()
-                        
-                        print('El ciclo recibido es: ' + str(DUTY) + '    ' + str(type(DUTY)))
-                        CICLO = 1
-                        temp = 'c'
-                        SERIAL.write(temp.encode())
-                        DUTY = int(DUTY)
-                        ENVIAR_DATO(CICLO_UTIL, DUTY)
-                        if DUTY != 0:
-                            ENVIAR_DATO(INTERRUPTOR, 1.0)
-                            INTERRUP = TEMP_INTERRUPTOR = 1.0
-                            DIMMER = TEMP_CICLO = float(DUTY)
-                        elif DUTY == 0:
-                            ENVIAR_DATO(INTERRUPTOR, 0.0)
-                            INTERRUP = TEMP_INTERRUPTOR = 0.0
-                            DIMMER = TEMP_CICLO = float(DUTY)
+                        if DUTY != bytes(''.encode()):
+                            print('El ciclo recibido es: ' + str(DUTY) + '    ' + str(type(DUTY)))
+                            CICLO = 1
+                            temp = 'c'
+                            SERIAL.write(temp.encode())
+                            DUTY = int(DUTY)
+                            ENVIAR_DATO(CICLO_UTIL, DUTY)
+                            if DUTY != 0:
+                                ENVIAR_DATO(INTERRUPTOR, 1.0)
+                                INTERRUP = TEMP_INTERRUPTOR = 1.0
+                                DIMMER = TEMP_CICLO = float(DUTY)
+                            elif DUTY == 0:
+                                ENVIAR_DATO(INTERRUPTOR, 0.0)
+                                INTERRUP = TEMP_INTERRUPTOR = 0.0
+                                DIMMER = TEMP_CICLO = float(DUTY)
             # ------SENSOR--------
             if LEER == bytes('Z'.encode()):
                 print('EL MAESTRO TIENE UNA CORRIENTE PARA ENVIAR')
@@ -180,15 +182,15 @@ def LEER_MICRO():
                     if SERIAL.readable() == True:
                         SERIAL.flush()
                         corriente = SERIAL.readline()
-                        
-                        print('LA CORRIENTE RECIBIDA ES : ' + str(corriente) + '   ' + str(type(corriente)))
-                        COR = 1
-                        temp = 'z'
-                        SERIAL.write(temp.encode())
-                        COR_ENV = float(corriente)
-                        COR_ENV = COR_ENV / 100
-                        print('LA CORRIENTE EN MEMORIA ES: ' + str(COR_ENV) + '   ' + str(type(COR_ENV)))
-                        ENVIAR_DATO(CORRIENTE, COR_ENV)
+                        if corriente != bytes(''.encode()):
+                            print('LA CORRIENTE RECIBIDA ES : ' + str(corriente) + '   ' + str(type(corriente)))
+                            COR = 1
+                            temp = 'z'
+                            SERIAL.write(temp.encode())
+                            COR_ENV = float(corriente)
+                            COR_ENV = COR_ENV / 100
+                            print('LA CORRIENTE EN MEMORIA ES: ' + str(COR_ENV) + '   ' + str(type(COR_ENV)))
+                            ENVIAR_DATO(CORRIENTE, COR_ENV)
                         
             if LEER == bytes('Q'.encode()):
                 temp = 'Q'
@@ -263,6 +265,12 @@ if name == 'main':
             DISP_COMIDA = OBTENER_DATO(DEVICE_LABEL, COMIDA)
             DISP_AGUA = OBTENER_DATO(DEVICE_LABEL, AGUA)
             TOMA = OBTENER_DATO(DEVICE_LABEL, TOMA_CORRIENTE)
+            
+            print('DIMMER EN UBIDOTS:   ' + str(DIMMER) +      '  DIMMER EN MEMORIA:   ' + str(TEMP_CICLO))
+            print('INTERRUP EN UBIDOTS: ' + str(INTERRUP) +    '  INTERRUP EN MEMORIA: ' + str(TEMP_INTERRUPTOR))
+            print('COMIDA EN UBIDOTS:   ' + str(DISP_COMIDA) + '  COMIDA EN MEMORIA:   ' + str(TEMP_COMIDA))
+            print('AGUA EN UBIDOTS:     ' + str(DISP_AGUA) +   '  AGUA EN MEMORIA:     ' + str(TEMP_AGUA))
+            print('TOMA COR EN UBIDOTS: ' + str(TOMA) +        '  TOMA EN MEMORIA:     ' + str(TEMP_TOMACORRIENTE))
 
             #----------------------------------------REVISAR SI EL MICROCONTROLADOR TIENE ALGUNA ALERTA PARA RASPBERRY Y/O UBIDOTS----------------------------------------
 
@@ -328,7 +336,7 @@ if name == 'main':
                             
 
             if TOMA != TEMP_TOMACORRIENTE:
-                print('La toma cambio cambio')
+                print('La toma cambio')
                 TEMP_TOMACORRIENTE = TOMA
 
                 if TOMA == 1:
@@ -350,7 +358,7 @@ if name == 'main':
                                         
             print('Ejecutando...')
 
-        except:
+        except Exception as ERROR_M:
             print('ERROR DETECTADO')
             gpio.output(36, False)
             CORREO_DESTINO = 'dgomezbernal24@gmail.com'
@@ -363,8 +371,8 @@ if name == 'main':
             msg['To'] = CORREO_DESTINO
             msg['To'] = CORREO_DESTINO_2
             msg['From'] = CORREO_MAESTRO
-            msg['Subject'] = 'ERROR DETECTADO'
-            msg.attach(MIMEText('ERROR EN EL MODULO MAESTRO DERECTADO '))
+            msg['Subject'] = 'ERROR EN EL MODULO MAESTRO'
+            msg.attach(MIMEText(str(ERROR_M)))
 
             server = smtplib.SMTP(smtp_server)
             server.starttls()
