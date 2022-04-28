@@ -292,7 +292,8 @@ if name == 'main':
                         LEER_MICRO()
 
                 if INTERRUP == 0.0:
-                    ENVIAR_DATO(CICLO_UTIL, 0)
+                    ENVIAR_DATO(CICLO_UTIL, 0.0)
+                    TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
                     print('Interruptor Desactivado')
                     LEER_MICRO()
                     temp = 'I'
