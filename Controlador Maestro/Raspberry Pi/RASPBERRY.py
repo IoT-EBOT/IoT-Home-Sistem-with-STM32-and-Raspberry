@@ -5,13 +5,7 @@ import requests
 import serial
 import time
 import os
-import smtplib
 import RPi.GPIO as gpio
-
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email.encoders import encode_base64
 
 gpio.setwarnings(False)
 gpio.setmode(gpio.BOARD)
@@ -360,25 +354,8 @@ if name == 'main':
             print('Ejecutando...')
 
         except Exception as ERROR_M:
+
             print('ERROR DETECTADO')
             gpio.output(36, False)
-            CORREO_DESTINO = 'dgomezbernal24@gmail.com'
-            CORREO_DESTINO_2 = 'cristiancobos2002@gmail.com'
-            CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
-            PASSWORD = 'E-BOT2021' 
-            smtp_server = 'smtp.gmail.com:587' #HOST,PUERTO(PARA GMAIL)
-            msg = MIMEMultipart()
 
-            msg['To'] = CORREO_DESTINO
-            msg['To'] = CORREO_DESTINO_2
-            msg['From'] = CORREO_MAESTRO
-            msg['Subject'] = 'ERROR EN EL MODULO MAESTRO'
-            msg.attach(MIMEText(str(ERROR_M)))
-
-            server = smtplib.SMTP(smtp_server)
-            server.starttls()
-            server.login(CORREO_MAESTRO, PASSWORD)
-            server.sendmail(CORREO_MAESTRO, CORREO_DESTINO, msg.as_string())
-            server.sendmail(CORREO_MAESTRO, CORREO_DESTINO_2, msg.as_string())
-            print("ALERTA DE ERROR ENVIADA ")
-            server.quit()
+            print("EL ERROR DETECTADO FUE = "   + str(ERROR_M))

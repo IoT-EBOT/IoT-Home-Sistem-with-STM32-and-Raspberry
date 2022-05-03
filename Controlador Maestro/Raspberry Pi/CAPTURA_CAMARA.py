@@ -39,9 +39,9 @@ SCOPES = ['https://mail.google.com/'] #Solicitud acceso: Lea, redacte, envíe y
 RUTA_GRABACION = "/home/pi/Desktop/MAESTRO/GRABACION.avi" # Direccion donde se encuentra la 
                                                           # grabacion que se enviara por correo 
 
-CORREO_MAESTRO = 'iot.e.bot21@gmail.com'
-CORREO_DESTINO = "dgomezbernal24@gmail.com"
-CORREO_DESTINO_2 = "cristiancobos2002@gmail.com"
+CORREO_MAESTRO = 'CORREO_MAESTRO@gmail.com'
+CORREO_DESTINO = "CORREO_DESTINO@gmail.com"
+CORREO_DESTINO_2 = "CORREO_DESTINO2@gmail.com"
 ASUNTO_MSG = "ALERTA APERTURA PUERTA"
 CUERPO_MSG = "GRABACION DE ALERTA DETECTADA EN LA PUERTA"
 
