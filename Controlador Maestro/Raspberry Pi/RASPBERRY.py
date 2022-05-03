@@ -18,7 +18,7 @@ SERIAL = serial.Serial('/dev/ttyAMA0', 9600, timeout=3.0, write_timeout=3.0)  # 
 
 # ---------------------------------------------Parametros  y variables en Ubidots-------------------------------------------
 
-TOKEN = "BBFF-KTENSeYz4imv5bl5kPZmtJrrE2qnU4"   # TOKEN de ubidots 
+TOKEN = "__TOKEN_DE_UBIDOTS__"   # TOKEN de ubidots 
 DEVICE_LABEL = "raspberry"                      # Nombre de dispositivo en Ubidots
 
 CICLO_UTIL = "dimmer"                           # VARIABLE: Ciclo util para disparo de dimmer
