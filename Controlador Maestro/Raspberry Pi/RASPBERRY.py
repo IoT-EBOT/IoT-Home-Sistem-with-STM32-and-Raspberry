@@ -1,6 +1,7 @@
 # -------------------------------------------------LIBRERIAS USADAS------------------------------------------
 
 from ast import Try
+from types import NoneType
 import requests
 import serial
 import time
@@ -272,7 +273,7 @@ if name == 'main':
 
             #--------------COMPARAR LOS ULTIMOS DATOS LEIDOS EN UBIDOTS CON LOS ALMACENADOS EN LOCAL PARA DETERMINAR SI EL USUARIO QUIERE REALIZAR UNA ACCION--------------
 
-            if INTERRUP != TEMP_INTERRUPTOR:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
+            if INTERRUP != TEMP_INTERRUPTOR and INTERRUP != None:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
                 print('El interruptor cambio')
                 TEMP_INTERRUPTOR = INTERRUP
                 if INTERRUP == 1.0:
@@ -297,7 +298,7 @@ if name == 'main':
                         LEER_MICRO()
                                 
                                 
-            if DIMMER != TEMP_CICLO and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
+            if DIMMER != TEMP_CICLO and DIMMER != None and INTERRUP == 1.0:  # Aqui falta dar un tiempo por si el usuario se pone de CHISTOSO a jugar con el slider
                 print('El dimmer cambio')
                 TEMP_CICLO = DIMMER = OBTENER_DATO(DEVICE_LABEL, CICLO_UTIL)
                 LEER_MICRO()
@@ -308,7 +309,7 @@ if name == 'main':
                     LEER_MICRO()
 
 
-            if DISP_COMIDA != TEMP_COMIDA:  
+            if DISP_COMIDA != TEMP_COMIDA and DISP_COMIDA != None:  
                 print('La comida cambio')
                 TEMP_COMIDA = DISP_COMIDA
                 LEER_MICRO()
@@ -319,7 +320,7 @@ if name == 'main':
                     LEER_MICRO()
 
 
-            if DISP_AGUA != TEMP_AGUA:  
+            if DISP_AGUA != TEMP_AGUA and DISP_AGUA != None:  
                 print('El agua cambio')
                 TEMP_AGUA = DISP_AGUA
                 LEER_MICRO()
@@ -330,7 +331,7 @@ if name == 'main':
                     LEER_MICRO()
                             
 
-            if TOMA != TEMP_TOMACORRIENTE:
+            if TOMA != TEMP_TOMACORRIENTE and TOMA != None:
                 print('La toma cambio')
                 TEMP_TOMACORRIENTE = TOMA
 
