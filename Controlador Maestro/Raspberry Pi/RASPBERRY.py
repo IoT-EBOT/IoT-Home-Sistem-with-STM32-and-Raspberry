@@ -1,7 +1,6 @@
 # -------------------------------------------------LIBRERIAS USADAS------------------------------------------
 
 from ast import Try
-from types import NoneType
 import requests
 import serial
 import time
