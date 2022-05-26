@@ -12,15 +12,8 @@ A continuación, se describe los pasos desarrollados para la preparación de la 
 
 ## __1. Instalación de paquetes para manejo de datos de video (OPENCV):__
 
-### 1. Instalación librerias para tratar archivos de imagen y video 
 
-```Shell:
-sudo apt-get install libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev libqtgui4 libqt4-test
-```
-
-![1](Imagenes/1.png)
-
-### 2. Instalación OpenCV 4 con sus módulos principales 
+### 1. Instalación OpenCV 4 con sus módulos principales 
 
 Se debe instalar la herramienta de desarrollo CMake que es necesaria para compilar OpenCV.
 
@@ -93,7 +86,7 @@ sudo apt install libatlas3-base
 sudo pip3 install numpy
 ```
 
-### 3. Comprobación de la instalación CV2  
+### 2. Comprobación de la instalación CV2  
 
 ```Shell
 python3
